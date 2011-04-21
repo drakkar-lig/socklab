@@ -1,0 +1,926 @@
+%
+% socklab : manuel de référence et d'utilisation
+%
+% sous Licence CeCILL V2, voir le fichier Licence_CeCILL_V2-fr.txt
+
+\NeedsTeXFormat{LaTeX2e}
+\documentclass[a4paper,twoside,12pt]{report}
+
+\makeindex
+
+\usepackage[french]{babel}
+\usepackage{fullpage}
+\usepackage[latin1]{inputenc}
+
+\def\fig#1#2#3{
+	\begin{figure}[hbtp]\centerline{\epsfig{figure=#1,width=4in}}
+        \caption{#3}\label{#2}\end{figure}}
+
+% affichage et indexation des commandes
+\newcommand{\cmd}[1]{\texttt{#1}\index{#1}}
+
+
+\title{\texttt{socklab}\\
+Laboratoire d'étude des {\em sockets} Internet \\
+Guide d'utilisation\\
+Guide de référence
+}
+
+\author{$Revision: 386 $}
+\date{$Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $}
+
+\begin{document}
+
+\maketitle
+
+%\newlength{\origparskip}
+%\setlength{\origparskip}{\parskip}
+%\setlength{\parskip}{0em}
+
+\pagestyle{empty}
+\verb+ + \newpage
+
+\tableofcontents
+
+%\setlength{\parskip}{\origparskip}
+%\setlength{\parskip}{1em}
+
+%
+%
+%
+\chapter{Introduction}
+
+Au sein d'une même machine, les processus disposent d'un certain nombre 
+d'outils pour communiquer entre eux: fichiers, {\em pipes}, signaux, files de messages, etc. mais 
+ces outils ne sont valables qu'à la condition que les processus concernés s'exécutent sur 
+la même machine.
+
+Deux processus s'exécutant sur deux machines différentes ne pourront 
+communiquer que si ces machines sont reliées par réseau. Mais ils devront utiliser ce 
+que l'on appelle une interface de programmation réseau~: il s'agit d'un ensemble de 
+primitives dont l'objectif est de mettre en relation des processus sur des machines 
+différentes.
+
+Il existe plusieurs interfaces de programmation réseaux sur les systèmes UNIX~; la 
+plus utilisée est actuellement les {\em sockets} BSD ({\em Berkeley Software Distribution}). Le 
+terme socket sert d'abord à désigner les points d'accès que les processus doivent 
+manipuler pour pouvoir envoyer ou recevoir des données. Par extension, ce terme 
+désigne toute l'interface de programmation (on parle alors des sockets).
+
+L'utilisation de cette interface de programmation n'est pas aisée~: il est rare que 
+deux processus (même situés sur une même machine) arrivent à communiquer du 
+premier coup par l'intermédiaire de sockets. En effet, les primitives sont généralement 
+mal employées, ou les structures de données mal utilisées, si bien que les premières 
+tentatives sont souvent des échecs (sans parler des erreurs qui surviennent directement 
+lors de la compilation des programmes).
+
+\texttt{socklab} est un utilitaire vous permettant de manipuler les sockets, sans avoir à 
+compiler la moindre ligne de code. Ce laboratoire d'étude des sockets se présente 
+sous la forme d'un interpréteur de commandes, où à chaque commande est associé 
+l'appel d'une primitive de l'interface (parfois plusieurs primitives). À chaque fois que 
+vous lancez une commande, \texttt{socklab} exécute la primitive correspondante et vous 
+donne un compte rendu de cette exécution.
+
+Si vous découvrez les sockets, \texttt{socklab} vous aidera à comprendre le rôle des 
+différentes primitives, et la façon dont elles doivent être utilisées (ce qui peut être fait, ce 
+qui est interdit, etc.). Si vous connaissez déjà les sockets, \texttt{socklab} pourra vous être d'une 
+grande utilité pour étudier leur fonctionnement ou leurs limites dans des situations 
+particulières.
+
+%
+%
+%
+\chapter{Présentation générale du laboratoire}
+
+%
+%
+\section{Classification des commandes}
+
+Les commandes que \texttt{socklab} met à votre disposition sont classées en trois catégories~:
+
+\begin{enumerate}
+\item les commandes de {\em contrôle} des sockets, permettant de les créer, les 
+supprimer ou modifier leur mode de fonctionnement (manipulation d'options)~;
+
+\item les commandes d'{\em exploitation} des sockets, permettant d'envoyer ou de 
+recevoir des messages à travers les sockets~;
+
+\item les commandes {\em spéciales} de \texttt{socklab} qui n'ont pas un lien direct avec la 
+manipulation des sockets (par exemple~: l'affichage de l'état des sockets créées, 
+l'affichage de la liste des commandes disponibles).
+\end{enumerate}
+
+%
+%
+\section{Modes de fonctionnement de \texttt{socklab}}
+
+\texttt{socklab} peut être utilisé dans trois modes de fonctionnement différents. Le choix 
+d'un de ces trois modes détermine la liste des commandes de contrôle et d'exploitation 
+disponibles pendant l'utilisation de \texttt{socklab} (dans les trois cas, la liste des commandes 
+spéciales est invariante)~:
+
+\begin{itemize}
+\item En mode standard (mode par défaut), une commande est associée à chaque 
+appel système permettant de manipuler les sockets (c'est à dire, les primitives 
+telles que \texttt{socket()}, \texttt{bind()}, \texttt{send()}). En exécutant une liste de commandes, 
+vous pouvez observer les résultats que vous obtiendriez si vous exécutiez un 
+programme C dans lequel serait enchaînée la liste des primitives équivalentes.
+
+\item En mode TCP, la panoplie de commandes proposées est orientée vers une 
+utilisation exclusive des sockets avec le protocole TCP. Les primitives n'ayant 
+aucun rapport avec le protocole TCP ne sont pas représentées~: les 
+commandes disponibles sont donc moins nombreuses qu'en mode standard. 
+Par ailleurs, de nouvelles commandes sont introduites afin de simplifier 
+l'utilisation de \texttt{socklab} (ces commandes réalisent par exemple l'enchainement 
+de plusieurs primitives).
+
+\item De façon similaire, en mode UDP, la liste des commandes proposées est 
+orientée vers une utilisation exclusive des sockets avec le protocole UDP.
+\end{itemize}
+
+Le mode standard est normalement utilisé pour étudier les primitives de l'interface 
+de programmation des sockets, comprendre leur fonctionnement et découvrir leurs 
+limites. Alors que les modes UDP et TCP sont normalement utilisés pour étudier ces 
+protocoles respectifs (au niveau service ou au niveau fonctionnement, mais dans le 
+dernier cas, l'utilisation conjointe d'un analyseur de traffic tel que \texttt{snoop},
+\texttt{tcpdump} ou \texttt{ethereal} est cependant nécessaire).
+
+%
+%
+\section{Principe d'utilisation}
+
+Quel que soit le mode de fonctionnement utilisé, le but de \texttt{socklab} est de fournir 
+une interface pour créer, exploiter et supprimer des sockets. Au cours d'une même 
+session avec \texttt{socklab}, vous pouvez manipuler plusieurs sockets simultanément. Cela 
+signifie qu'entre chaque commande exécutée, \texttt{socklab} tient à jour la liste des sockets 
+que vous avez créées. À tout moment vous pouvez choisir n'importe quelle socket 
+précédemment créée, et l'utiliser pour envoyer ou recevoir des données grâce aux 
+commandes appropriées.
+
+%
+%
+\section{Lancement de \texttt{socklab}}
+
+\texttt{socklab} figure normalement dans le répertoire \texttt{/usr/local/bin/} des stations. Ce 
+répertoire est normalement inclus d'office dans la variable d'environnement \texttt{PATH}.
+
+Une fois lancé, \texttt{socklab} affiche une bannière de présentation, suivie du prompt de 
+l'interpréteur de commandes:
+
+\begin{verbatim}
+sparc1 # socklab
+socklab - laboratoire d'etude des sockets INTERNET
+L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
+--------------------------------------------------------------------------
+socklab>
+\end{verbatim}
+
+Par défaut, \texttt{socklab} fonctionne en mode standard. Pour l'utiliser en mode UDP 
+ou TCP, vous devez précisez respectivement l'option \texttt{udp} ou \texttt{tcp} sur la ligne de 
+commande. Le prompt de \texttt{socklab} est alors modifié pour indiquer le mode utilisé.
+Par exemple~:
+
+\begin{verbatim}
+sparc1 # socklab tcp
+socklab - laboratoire d'etude des sockets INTERNET
+L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
+--------------------------------------------------------------------------
+socklab-TCP>
+\end{verbatim}
+
+%
+%
+%
+\chapter{Exemple d'utilisation de \texttt{socklab}}
+
+Dans cette section nous allons illustrer l'utilisation de \texttt{socklab} en mode standard. 
+Commencez donc par lancer le laboratoire dans ce mode en exécutant \texttt{socklab} sans 
+option~:
+
+\begin{verbatim}
+sparc1 # socklab
+socklab - laboratoire d'etude des sockets INTERNET
+L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
+--------------------------------------------------------------------------
+socklab>
+\end{verbatim}
+
+Dans ce mode, à chaque primitive de l'interface de programmation des sockets est 
+associée une commande. Toutes les commandes portent donc le même nom que la 
+primitive qu'elles manipulent. Par exemple, pour créer une socket, l'appel système 
+s'appelle \texttt{socket()}. Demandez l'exécution de la commande \cmd{socket}~:
+
+\begin{verbatim}
+socklab> socket
+Protocole ? [tcp/udp]:
+\end{verbatim}
+
+La primitive \texttt{socket()} a normalement trois paramètres~: le domaine dans lequel la 
+nouvelle socket doit être créée, son type et le protocole à utiliser dans le type donné. 
+Le laboratoire ne permet d'étudier que les sockets du domaine Internet. Deux 
+types sont seulement représentés ({\sc stream} ou {\sc datagram}), et à chaque type ne 
+correspond qu'un seul protocole (TCP ou UDP respectivement). C'est pourquoi 
+\texttt{socklab} vous demande seulement le protocole que vous désirez utiliser avec la 
+nouvelle socket. Choisissez UDP.
+
+\texttt{socklab} dispose alors de tous les renseignements nécessaires pour appeler la 
+primitive \texttt{socket()}. Si l'appel n'échoue pas, \texttt{socklab} vous retourne
+l'{\em identificateur} de la 
+socket qu'il vient de créer (il s'agit du numéro de descripteur que la primitive \texttt{socket()} 
+retourne). C'est par cet identificateur que vous pourrez désormais manipuler cette 
+socket~:
+
+\begin{verbatim}
+socklab> socket
+Protocole [tcp/udp] ?: udp
+La socket est identifiee par l'identificateur 3
+
+socklab>
+\end{verbatim}
+
+Afin de ne pas rendre l'utilisation de \texttt{socklab} trop fastidieuse, les noms des 
+commandes peuvent être donnés en abrégé. De plus, quand une commande possède 
+des paramètres (par exemple, le type de protocole pour la commande socket), ils 
+peuvent être directement saisis sur la ligne. Ainsi, pour créer une nouvelle socket TCP, 
+vous pouvez le demander de différentes manières~: \texttt{socket tcp}, \texttt{sock tcp},
+\texttt{s tcp} 
+ou \texttt{s t} sont des ordres équivalents. Comme le paramètre est directement passé sur la 
+ligne, \texttt{socklab} vous rend le prompt dès qu'il a exécuté la primitive \texttt{socket()}~:
+
+\begin{verbatim}
+socklab> sock udp
+La socket est identifiee par l'identificateur 4
+ 
+socklab>
+\end{verbatim}
+
+Depuis le début de cette démonstration, deux sockets ont donc été créées. Pour 
+le vérifier, exécutez la commande \cmd{status}:
+
+\begin{verbatim}
+socklab> status
+ Id      Proto       Adresse            Connexion           RWX ?
+ -----------------------------------------------------------------------
+ 3       UDP         -                  -                   .W.
+>4       UDP         -                  -                   .W.
+ 
+socklab>
+\end{verbatim}
+
+Cette commande permet d'afficher tous les renseignements rattachés aux sockets 
+qui ont été créées (la forme abrégée de la commande status est \texttt{=}). Pour chaque 
+socket affichée, \texttt{Id} est sont identificateur, \texttt{Proto} est le type de protocole utilisé, 
+\texttt{Adresse} est l'adresse qui lui a été éventuellement affectée (dans l'exemple précédent, 
+ce n'est pas le cas), \texttt{Connexion} indique si une connexion est établie, et \texttt{RWX} indique 
+ce qu'il est possible de faire (\texttt{R} = read, \texttt{W} = write, \texttt{X} = eXception,
+cf.~\ref{ref:status}).
+Notez la présence du signe \texttt{>} à gauche de la deuxième socket. Ce signe indique quelle est la 
+socket qui est a été dernièrement créée ou manipulée.
+
+Vous allez maintenant utiliser la commande \cmd{bind}, qui fait appel à la primitive du 
+même nom pour affecter une adresse à une socket. Dans le domaine Internet, une 
+socket est identifiée par une {\em adresse Internet} et par un {\em numéro de port}.
+
+Exécutez la commande \cmd{bind} sans argument. \texttt{socklab} va vous demander de saisir 
+ses paramètres un par un, à savoir~: l'identificateur de la socket à traiter, l'adresse 
+Internet et le numéro de port à affecter. Pour certains arguments, \texttt{socklab} vous 
+propose des valeurs par défaut~; c'est le cas de l'identificateur de la socket à traiter~: par 
+défaut, \texttt{socklab} vous propose l'identificateur de la dernière socket créée ou manipulée 
+(celle qui apparait avec le signe \texttt{>} avec la commande \texttt{status}). Si \texttt{socklab} vous 
+propose des valeurs par défaut pour des arguments, elles apparaissent entre 
+parenthèses. Il suffit alors d'appuyer sur \texttt{Enter} pour les valider.
+
+Dans l'exemple nous affectons à la socket d'identificateur 3 l'adresse de la station 
+\texttt{sparc1}~:  remplacez-là par l'adresse ou le nom de la station sur laquelle vous travaillez. 
+Quant au numéro de port, nous choisissons arbitrairement le numéro \texttt{5000}~:
+
+\begin{verbatim}
+socklab> bind
+Id. socket (4) ?: 3
+Host ?: sparc1
+Port ?: 5000
+ 
+socklab>
+\end{verbatim}
+
+Quand une station est connectée sur plusieurs réseaux, elle a plusieurs adresses 
+Internet. La primitive \texttt{bind()} peut alors accepter une adresse Internet spéciale 
+notée \texttt{INADDR\_ANY}, et qui signifie ``n'importe quelle adresse de la machine'' (il s'agit 
+en fait d'une adresse générique). La notation à utiliser avec la commande bind pour 
+désigner cette adresse particulière est l'astérisque, \texttt{*}.
+
+En ce qui concerne le port, vous pouvez laisser au système d'exploitation le choix 
+d'un numéro de port libre (si dans l'opération précédente le port \texttt{5000} était déjà utilisé, la 
+primitive \texttt{bind()} aurait échoué). Pour ce faire, indiquez le numéro de port \texttt{0}~; après avoir 
+exécuté la primitive \texttt{bind()}, \texttt{socklab} vous affichera le numéro de port choisi par le 
+système.
+
+Pour illustrer ces deux derniers points, nommez la deuxième socket UDP~:
+
+\begin{verbatim}
+socklab> bind 4 * 0
+Le port 1043 a ete affecte a la socket
+ 
+socklab> =
+ Id      Proto       Adresse            Connexion           RWX ?
+ -----------------------------------------------------------------------
+ 3       UDP         sparc1(5000)       -                   .W.
+>4       UDP         *(1043)            -                   .W.
+socklab>
+\end{verbatim}
+
+Vous pouvez remarquer que les deux sockets possèdent maintenant une 
+adresse.
+
+Jusqu'ici vous n'avez utilisé que deux commandes de contrôle, \texttt{socket} et \texttt{bind}, et 
+une commande spéciale, \texttt{status}. Pour terminer, vous allez échanger un message 
+entre les deux sockets UDP créées.
+
+La primitive permettant d'envoyer un message avec le protocole UDP s'appelle 
+\texttt{sendto()}. Les paramètres de la commande \cmd{sendto} sont dans l'ordre~: l'identificateur de 
+la socket à utiliser, la machine destination, le numéro de port destination sur cette machine 
+et le message à envoyer. Si le message est constitué de plusieurs mots, vous devez 
+utiliser des guillemets, sinon tous les mots seront considérés comme autant de 
+paramètres supplémentaires.
+
+À l'aide de la commande \cmd{sendto}, envoyez un message depuis la première 
+socket créée, Id 3, vers la deuxième, \texttt{sparc1}, port \texttt{1043}~:
+
+\begin{verbatim}
+socklab> sendto 3 sparc1 1043 "Voici un message"
+16 octet(s) envoye(s)
+
+socklab>
+\end{verbatim}
+
+Sur la deuxième socket UDP (identifiée par 4 dans l'exemple), demandez la 
+réception de 20 octets par la commande \cmd{recvfrom}. Cette commande n'a que deux 
+paramètres~: le numéro de la socket sur laquelle le message doit être lu, et le nombre 
+d'octets à lire~:
+
+\begin{verbatim}
+socklab> recvfrom 4 20
+Un message de 16 octet(s) a ete recu de sparc1 (5000).
+Message=<Voici un message>
+ 
+socklab>
+\end{verbatim}
+
+Voici maintenant ce qu'il se passe lorsque \texttt{socklab} rencontre un problème en 
+exécutant une commande. Essayez d'utiliser la commande \cmd{accept} sur la dernière 
+socket UDP créée. Cette commande est réservée au protocole TCP pour récupérer 
+une demande de connexion sur une socket passive. Elle n'a donc aucun sens pour le 
+protocole UDP~:
+
+\begin{verbatim}
+socklab> accept 4
+accept(): Operation not supported on transport endpoint
+ 
+socklab>
+\end{verbatim}
+
+Lorsque l'appel d'une primitive aboutit à un échec, un message décrivant le nom 
+de la primitive appelée et l'erreur constatée est toujours affiché en vidéo-inversée (ce 
+message est accompagné d'un signal sonore).
+
+Notez que l'utilisation de \texttt{socklab} a été illustré sur une seule machine~; mais vous 
+pouvez évidemment utiliser le laboratoire sur deux machines différentes, connectées 
+par réseaux, et réaliser des communications entre ces deux laboratoires par 
+l'intermédiaire de sockets TCP ou UDP.
+
+À tout moment vous pouvez demander la liste des commandes disponibles,
+tapez \cmd{help} ou \texttt{?}~:
+
+\begin{verbatim}
+socklab> help
+LISTE DES COMMANDES DISPONIBLES:
+    s socket            r read              w write           ? help
+    b bind              v recv              d send            = status
+    l listen            f recvfrom          t sendto          q quit
+    a accept            x exit            
+    c connect           <id> select. sock.
+    k close
+    h shutdown
+    o options
+
+socklab>
+\end{verbatim}
+
+Chaque commande apparait avec la lettre qui peut être employée à sa place 
+comme abréviation minimale.
+
+%
+%
+%
+\chapter{Guide de référence de \texttt{socklab}}
+
+%
+%
+\section{Utilisation}
+
+Le laboratoire d'étude des sockets se lance en tapant la commande \texttt{socklab} à 
+partir d'un shell. En précisant le paramètre \texttt{udp} ou \texttt{tcp}, vous pouvez orienter la 
+manipulation des sockets vers le protocole UDP ou TCP respectivement.
+
+Une fois le laboratoire lancé, vous avez accès à un interpréteur de commandes 
+qui vous permet de créer, sélectionner, manipuler ou supprimer les sockets.
+
+Le laboratoire gère en permanence une table dans laquelle est mémorisée la 
+liste des sockets que vous avez créées.
+
+La plupart des commandes demandent un ou plusieurs paramètres~: vous 
+pouvez les préciser en tant qu'arguments sur la ligne de commande~; sinon ils vous sont 
+automatiquement demandés lors de l'exécution de la commande.
+
+Quelques commandes possèdent aussi des options, par exemple les 
+commandes \texttt{send} ou \texttt{recv}~: ces options ne peuvent être précisées que sur la ligne de 
+commande. Si vous les omettez, elles ne vous seront pas demandées lors de 
+l'exécution de la commande (les options sont des mots qui commencent toujours par un 
+tiret \texttt{-}).
+
+Vous avez le droit d'abréger les noms des commandes, des paramètres ou des 
+options, pourvu que l'interpréteur puisse les identifier sans ambiguïté. Par exemple, 
+vous pouvez taper \texttt{so} à la place de la commande \texttt{socket}. Par contre vous ne pouvez 
+pas taper \texttt{se} à la place de \texttt{send} parce que la commande \texttt{sendto} commence
+aussi par \texttt{se}. Cependant, à chaque commande est associée une lettre unique qui peut être 
+utilisée à la place du nom complet.
+
+À tout moment vous pouvez interrompre le déroulement d'une commande en 
+appuyant sur \texttt{Ctrl-C}~: vous revenez alors automatiquement à l'interpréteur de 
+commandes du laboratoire.
+
+Nous allons maintenant décrire séparément toutes les commandes reconnues par 
+l'interpréteur de \texttt{socklab}. Pour chacunes d'elles nous indiquons d'abord la lettre pouvant 
+être utilisée comme raccourci, puis ses éventuels paramètres ou options.
+
+%
+%
+\section{Commandes spéciales}
+
+Les commandes spéciales sont celles qui ne s'appliquent pas à une socket en 
+particulier. Elles sont toujours disponibles, quel que soit le mode de fonctionnement du 
+laboratoire.
+
+
+\subsection[\texttt{quit}|\texttt{exit}]{\texttt{Q|X - quit|exit}}\index{quit}\index{exit}
+
+\begin{description}
+\item[Description~:] ces deux commandes sont équivalentes~: elles permettent de quitter le 
+laboratoire pour revenir au shell. Une confirmation est toujours demandée 
+(toutes les sockets créées sont supprimées lors de la terminaison de \texttt{socklab}).
+\end{description}
+
+
+\subsection[\texttt{help}]{\texttt{? - help {\em <cmd> ...}}}\index{help}
+
+\begin{description}
+\item[Description~:] sans paramètre, cette commande affiche la liste de toutes les commandes 
+disponibles avec la lettre qui peut être utilisée comme raccourci. Si des noms 
+de commandes sont passées comme paramètre, la commande affiche seulement 
+leur syntaxe.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <cmd>}] nom d'une commande dont la syntaxe doit être affichée.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{status}]{\texttt{= - status}}\index{status}
+\label{ref:status}
+
+\begin{description}
+\item[Description~:] affichage de l'état de toutes les sockets créées. La dernière socket créée ou 
+manipulée est indiquée par la marque \texttt{>} au début de la ligne qui la décrit. Pour 
+chaque socket la commande affiche~:
+	\begin{enumerate}
+	\item son identificateur~;
+	\item le protocole utilisé~: TCP ou UDP~;
+	\item son adresse locale si elle en possède une (avec son numéro de port)~;
+	\item l'adresse de la socket distante si une connexion a été établie~;
+	\item les opérations réalisables~:
+		\begin{description}
+		\item[\texttt{R}] (read) lecture de données ou récupération d'une connexion;
+		\item[\texttt{W}] (write) écriture de données~;
+		\item[\texttt{X}] (exception) lecture de données urgentes.
+		\end{description}
+	\end{enumerate}
+\end{description}
+
+%
+%
+\section{Commandes en mode standard}
+
+Dans ce mode, toutes les commandes correspondent à une primitive particulière 
+de l'interface de programmation des sockets (c'est le mode de fonctionnement du 
+laboratoire par défaut). Le nom de chaque commande est donc celui de la primitive 
+manipulée.
+
+À part \texttt{socket}, toutes les commandes ont pour premier paramètre l'identificateur 
+\texttt{\em <id>} de la socket sur laquelle elles doivent s'appliquer. Pour ce paramètre vous pouvez 
+préciser un point \texttt{.} pour indiquer que vous désirez utiliser la dernière socket créée ou 
+manipulée.
+
+
+\subsection[\texttt{socket}]{\texttt{S - socket [tcp|udp]}}\index{socket}
+
+\begin{description}
+\item[Description~:] création d'une socket dans le domaine Internet, de type {\sc stream} ou 
+{\sc datagram}, selon la valeur du paramètre.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{tcp}] création d'une socket de type {\sc stream} (utilisation du protocole TCP)~;
+	\item[\texttt{udp}] création d'une socket de type {\sc datagram} (utilisation du protocole UDP).
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{bind}]{\texttt{B - bind {\em <id> <host> <port>}}}\index{bind}
+
+\begin{description}
+\item[Description~:] affectation d'une adresse à la socket \texttt{<id>}.
+
+\item[Paramètres~:]~
+	\begin{description}
+	\item[\texttt{\em <host>}] adresse Internet à affecter à la socket.
+Si la machine sur laquelle vous 
+travaillez est connectée à plusieurs réseaux, elle possède plusieurs 
+adresses. Ce paramètre vous permet alors d'en chosir une précise. Vous 
+pouvez taper directement l'adresse ({\em dot notation}~: \texttt{xxx.xxx.xxx.xxx}) ou 
+vous pouvez donner un nom symbolique figurant dans le fichier 
+\texttt{/etc/hosts} (\texttt{.} est un raccourci pour le nom officiel de la machine sur 
+laquelle vous travaillez).
+
+		Vous pouvez spécifier l'adresse particulière \texttt{INADDR\_ANY} avec 
+l'astérisque \texttt{*}. L'adresse \texttt{INADDR\_ANY} est généralement utilisée pour 
+les sockets TCP passive, pour pouvoir recevoir des requêtes de 
+connexion sur n'importe quelle adresse de la machine.
+
+	\item[\texttt{\em <port>}] numéro de port de la socket. Vous pouvez taper directement le numéro 
+du port ou vous pouvez donner le nom d'un service figurant dans le fichier 
+\texttt{/etc/services}. En fournissant la valeur \texttt{0}, le système choisit 
+automatiquement un numéro de port disponible.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{listen}]{\texttt{L - listen {\em <id> <nb>}}}\index{listen}
+
+\begin{description}
+\item[Description~:] mise en écoute de la socket \texttt{\em <id>} (socket TCP uniquement).
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <nb>}] nombre de connexions pouvant être maintenues en attendant que ces 
+dernières soient récupérées par la commande \texttt{accept} (par défaut, \texttt{nb = 5}).
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{accept}]{\texttt{A - accept {\em <id>}}}\index{accept}
+
+\begin{description}
+\item[Description~:] attente ou récupération d'une connexion sur la socket \texttt{\em <id>} (socket TCP 
+uniquement).
+\end{description}
+
+\subsection[\texttt{connect}]{\texttt{C - connect {\em <id> <host> <port>}}}\index{connect}
+
+\begin{description}
+\item[Description~:] connexion de la socket \texttt{\em <id>} sur une socket distante. Si la connexion a pu être 
+établie, une nouvelle socket est créée.
+
+\item[Paramètres~:]~
+	\begin{description}
+	\item[\texttt{\em <host>}] nom ou adresse de la machine distante (cf. \texttt{bind})~;
+	\item[\texttt{\em <port>}] numéro de port ou nom de service sur la machine distante.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{close}]{\texttt{K - close {\em <id>}}}\index{close}
+
+\begin{description}
+\item[Description~:] fermeture de la socket \texttt{\em <id>}.
+\end{description}
+
+
+\subsection[\texttt{shutdown}]{\texttt{H - shutdown {\em <id>} [in|out|both]}}\index{shutdown}
+
+\begin{description}
+\item[Description~:] fermeture de la connexion précédemment établie sur la socket \texttt{\em <id>}.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{in}] fermeture en entrée seulement~;
+	\item[\texttt{out}] fermeture en sortie seulement~;
+	\item[\texttt{both}] fermeture dans les deux sens.
+	\end{description}
+\end{description}
+
+\subsection[\texttt{write}]{\texttt{W - write {\em <id> <msg>}}}\index{write}
+
+\begin{description}
+\item[Description~:] écriture d'un message dans la connexion précédemment établie sur la socket 
+\texttt{\em <id>}.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <msg>}] message à envoyer. Si vous voulez envoyer plusieurs mots, vous 
+devez les limiter par des guillemets. Pour envoyer un nombre d'octets 
+précis, sans tenir compte du contenu du message, utilisez la notation \texttt{\#nnn} 
+où \texttt{nnn} est le nombre d'octets à envoyer (le message est alors constitué 
+d'astérisques \texttt{*}).
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{read}]{\texttt{R - read {\em <id> <nb>}}}\index{read}
+
+\begin{description}
+\item[Description~:] lecture d'un message dans la connexion précédemment établie sur la socket 
+\texttt{\em <id>}.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <nb>}] nombre d'octets à lire (100 par défaut).
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{send}]{\texttt{D - send {\em <id> <msg>} [-oob] [-dontroute] [-loop]}}\index{send}
+
+\begin{description}
+\item[Description~:] écriture d'un message dans la connexion précédemment établie sur la socket 
+\texttt{\em <id>}. Cette commande diffère de \texttt{write} uniquement par les options qu'elle 
+propose.
+
+\item[Paramètres~:]~
+	\begin{description}
+	\item[\texttt{\em <msg>}] message à envoyer (cf. \texttt{write}).
+	\end{description}
+
+\item[Options~:]~
+	\begin{description}
+	\item[\texttt{-oob}] option {\em Out Of Band}, pour envoyer le message en mode {\em urgent}~;
+	\item[\texttt{-dontroute}] option {\em Don't Route}, pour que le message ne puisse pas franchir un 
+routeur~; autrement dit, pour qu'il ne puisse pas sortir des limites du 
+réseau sur lequel la machine est connectée~;
+	\item[\texttt{-loop}] cette option ne figure pas dans la primitive \texttt{send()} standard. En la 
+précisant, \texttt{socklab} envoie le message jusqu'à ce qu'une erreur 
+intervienne ou que vous appuyez sur \texttt{Ctrl-C}.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{recv}]{\texttt{V - recv {\em <id> <nb>} [-oob] [-peek]}}\index{recv}
+
+\begin{description}
+\item[Description~:] lecture d'un message dans la connexion précédemment établie sur la socket 
+\texttt{\em <id>}. Cette commande diffère de \texttt{read} uniquement par les options qu'elle 
+propose.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <nb>}] nombre d'octets à lire.
+	\end{description}
+
+\item[Options~:]~
+	\begin{description}
+	\item[\texttt{-oob}] option {\em Out Of Band}, pour lire des données urgentes~;
+	\item[\texttt{-peek}] option {\em Peek}, pour lire les données sans les retirer du buffer de 
+réception~; cette option permet de relire plusieurs fois les mêmes données.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{sendto}]{\texttt{T - sendto {\em <id> <host> <port> <mesg>} [-oob] [-dontroute]}
+			\\ \texttt{[-loop]}}\index{sendto}
+
+\begin{description}
+\item[Description~:] envoi d'un message à une socket destination précise. La socket \texttt{\em <id>} est 
+utilisée comme source du message (socket UDP uniquement).
+
+\item[Paramètres~:]~
+	\begin{description}
+	\item[\texttt{\em <host>}] adresse de la machine destination~;
+	\item[\texttt{\em <port>}] numéro de la socket sur la machine destination.
+	\end{description}
+
+\item[Options~:]~
+	\begin{description}
+	\item[\texttt{-oob}] option {\em Out Of Band} (cf. \texttt{send})~;
+	\item[\texttt{-dontroute}] option {\em Don't Route} (cf. \texttt{send})~;
+	\item[\texttt{-loop}] option {\em Loop} (cf. \texttt{send}).
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{recvfrom}]{\texttt{F - recvfrom {\em <id> <nb>} [-oob] [-peek]}}\index{recvfrom}
+
+\begin{description}
+\item[Description~:] réception sur la socket \texttt{\em <id>}, d'un message envoyé par une socket distante 
+(socket UDP uniquement).
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <nb>}] nombre d'octets à lire.
+	\end{description}
+
+\item[Options~:]~
+	\begin{description}
+	\item[\texttt{-oob}] option {\em Out of Band} (cf. \texttt{recv})
+	\item[\texttt{-peek}] option {\em Peek} (cf. \texttt{recv})
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{options}]{\texttt{O - options {\em <id> <option> ...}}}\index{options}
+
+\begin{description}
+\item[Description~:] consultation et modification des options de la socket \texttt{\em <id>}. Utilisée sans 
+paramètre, cette commande passe en revue toutes les options de la socket~: 
+elles sont affichées une par une, avec leur valeur courante. Si vous précisez une 
+ou plusieurs options particulières par paramètre, la commande ne traite que 
+celles-ci.
+
+	Pour ne pas changer la valeur d'une option, tapez directement sur \texttt{Enter}~; 
+l'option suivante est alors affichée.
+
+	La majorité des options sont booléennes~: vous devez répondre par \texttt{o} ou \texttt{n} 
+pour les modifier.
+
+	L'option \texttt{asynchrone} permet d'être averti quand un message ou une 
+demande de connexion arrive sur la socket.
+
+	L'option \texttt{nodelay} permet de rendre les primitives non bloquantes (par défaut, 
+un \cmd{read} est bloquant quand aucun message n'est prêt).
+
+	Toutes les autres options sont celles que l'on peut consulter ou modifier par les 
+primitives \texttt{getsockopt()} et \texttt{setsockopt()} (toutefois, toutes les options 
+normalement accessibles ne sont pas représentées dans \texttt{socklab}).
+\end{description}
+
+%
+%
+\section{Commandes en mode TCP}
+
+Le mode TCP est le mode obtenu en lançant le laboratoire avec le paramètre 
+\texttt{tcp}. L'objectif de ce mode est d'étudier le protocole TCP, et non pas les sockets elles 
+mêmes. Les commandes disponibles sont moins nombreuses mais plus simples à 
+utiliser, car elles réalisent en général l'enchainement de plusieurs primitives manipulant 
+les sockets.
+
+À part \texttt{passive} et \texttt{connect}, toutes les commandes ont pour premier paramètre 
+l'identificateur \texttt{<id>} de la socket sur laquelle elles doivent s'appliquer. Pour ce paramètre 
+vous pouvez préciser un point \texttt{.} pour indiquer que vous désirez utiliser la dernière 
+socket créée ou manipulée.
+
+
+\subsection[\texttt{passive}]{\texttt{P - passive}}\index{passive}
+
+\begin{description}
+\item[Description~:] création d'une socket passive, prête à recevoir des demandes de connexion. 
+L'adresse \texttt{INADDR\_ANY} lui est automatiquement affectée, et un numéro port 
+libre est choisi par le système (équivalent à \texttt{socket tcp}, \texttt{bind . * 0} et
+\texttt{listen . 5} en mode standard).
+\end{description}
+
+
+\subsection[\texttt{accept}]{\texttt{A - accept {\em <id>}}}\index{accept}
+
+\begin{description}
+\item[Description~:] identique à la commande \texttt{accept} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{connect}]{\texttt{C - connect {\em <host> <port>}}}\index{connect}
+
+\begin{description}
+\item[Description~:] création d'une socket active et puis tentative de connexion sur une socket 
+distante. L'adresse \texttt{INADDR\_ANY} lui est automatiquement affectée, et un 
+numéro port libre est choisi par le système (équivalent à \texttt{socket tcp}, \texttt{bind . * 0},
+\texttt{connect . {\em <host> <port>}} en mode standard).
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <host>}] nom ou adresse de la machine distante~;
+	\item[\texttt{\em <port>}] numéro de port de la socket sur la machine distante.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{close}]{\texttt{K - close {\em <id>}}}\index{close}
+
+\begin{description}
+\item[Description~:] identique à \texttt{close} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{shutdown}]{\texttt{H - shutdown {\em <id>} [in|out|both]}}\index{shutdown}
+
+\begin{description}
+\item[Description~:] identique à \texttt{shutdown} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{write}]{\texttt{W - write {\em <id> <msg>}}}\index{write}
+
+\begin{description}
+\item[Description~:] identique à \texttt{write} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{read}]{\texttt{R - read {\em <id> <nb>}}}\index{read}
+
+\begin{description}
+\item[Description~:] identique à \texttt{read} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{usend}]{\texttt{D - usend \texttt{<id> <msg>}}}\index{usend}
+
+\begin{description}
+\item[Description~:] écriture d'un message urgent dans la connexion précédemment établie sur la 
+socket \texttt{\em <id>} (équivalent à \texttt{send {\em <id> <msg>} -oob} en mode standard).
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <msg>}] message à envoyer (cf. \texttt{write})
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{urecv}]{\texttt{V - urecv {\em <id> <nb>}}}\index{urecv}
+
+\begin{description}
+\item[Description~:] lecture d'un message urgent dans la connexion précédemment établie sur la 
+socket \texttt{\em <id>} (équivalent à \texttt{recv . {\em <nb>} -oob} en mode standard).`
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <nb>}] nombre d'octets à lire.
+	\end{description}
+\end{description}
+
+
+\subsection[\texttt{options}]{\texttt{O - options {\em <id> <option> ...}}}\index{options}
+
+\begin{description}
+\item[Description~:] identique à \texttt{options} en mode standard.
+\end{description}
+
+%
+%
+\section{Commandes en mode UDP}
+
+Le mode UDP est le mode obtenu en lançant le laboratoire avec le paramètre 
+\texttt{udp}. L'objectif de ce mode est d'étudier le protocole UDP, et non pas les sockets elles 
+mêmes.
+
+À part socket, toutes les commandes ont pour premier paramètre l'identificateur 
+\texttt{\em <id>} de la socket sur laquelle elles doivent s'appliquer. Pour ce paramètre vous pouvez 
+préciser un point \texttt{.} pour indiquer que vous désirez utiliser la dernière socket créée ou 
+manipulée.
+
+
+\subsection[\texttt{socket}]{\texttt{S - socket}}\index{socket}
+
+\begin{description}
+\item[Description~:] création d'une socket UDP. L'adresse \texttt{INADDR\_ANY} lui est automatiquement 
+affectée, et un numéro port libre est choisi par le système (équivalent à \texttt{socket udp}
+et \texttt{bind . * 0} en mode standard).
+\end{description}
+
+
+\subsection[\texttt{close}]{\texttt{K - close {\em <id>}}}\index{close}
+
+\begin{description}
+\item[Description~:] identique à \texttt{close} en mode standard.
+\end{description}
+
+
+\subsection[\texttt{sendto}]{\texttt{T - sendto {\em <id> <host> <port> <msg>}}}\index{sendto}
+
+\begin{description}
+\item[Description~:] identique à \texttt{sendto} en mode standard, les options en moins.
+\end{description}
+
+
+\subsection[\texttt{recvfrom}]{\texttt{F - recvfrom {\em <id> <nb>}}}\index{recvfrom}
+
+\begin{description}
+\item[Description~:] identique à \texttt{recvfrom} en mode standard, les options en moins.
+\end{description}
+
+
+\subsection[\texttt{options}]{\texttt{O - options {\em <id> <options> ...}}}\index{options}
+
+\begin{description}
+\item[Description~:] identique à \texttt{options} en mode standard.
+\end{description}
+
+\input{Documentation_Socklab.ind}
+
+\end{document}
