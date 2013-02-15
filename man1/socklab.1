@@ -14,21 +14,73 @@
 .Nd interactive shell for socket manipulation.
 .Sh SYNOPSIS             \" Section Header - required - don't modify
 .Nm
-.Op Ar tcp|udp
+.Op Ar tcp | Ar udp
 .Sh DESCRIPTION          \" Section Header - required - don't modify
 .Nm
 is a command interpreter that allows
-.Ar BSD socket manipulation
+BSD socket manipulation
 without having to write any line of C code.
 .Pp                      \" Inserts a space
-Possible options are:
+.Sh OPTIONS
 .Bl -tag -width -indent  \" Begins a tagged list 
-.It tcp             \" Each item preceded by .It macro
+.It Ar tcp             \" Each item preceded by .It macro
 use only SOCK_STREAM sockets
-.It udp
+.It Ar udp
 use only SOCK_DGRAM sockets
 .El                      \" Ends the list
 .Pp
+.Sh COMMANDS
+.Ss Special commands
+.Bl -tag -indent \" -width "123456789012"
+.It Ic Q | Ic X | Ic quit | Ic exit
+Exit
+.Nm
+.It Ic \&? | Ic help Ar cmd
+Get help for
+.Ar cmd
+.It Ic \&= | Ic status
+Show status for all active sockets.
+The currently selected socket is identified with
+.Va \&>
+at the beginning of the line.
+For every socket, the following information is given:
+.Va identifier ,
+.Va protocol type
+(UDP or TCP),
+.Va local address ,
+.Va remote address ,
+.Va RWX
+status.
+.El
+.Ss Standard commands
+.Bl -tag -indent
+.It Ic s | Ic socket Op Ar tcp | Ar udp
+Create a new socket of stream or datagram type
+.It Ic b | Ic bind Op Ar id Op Ar host Op Ar port
+Bind socket
+.Ar id
+to a given address.
+.Dv INADDR_ANY
+is specified using \&*
+.El
+.Ss UDP mode commands 
+.Bl -tag -indent
+.It Ic s | Ic socket
+create a new socket
+.It Ic c | Ic msocket
+create a new multicast socket
+.It Ic k | Ic close Op Ar id
+.It Ic o | Ic options Op Ar id Op Ar nom
+.It Ic j | Ic mjoin
+.It Ic l | Ic mleave
+.It Ic b | Ic mbind
+.It Ic f | Ic recvfrom
+.It Ic r | Ic mrecvfrom
+.It Ic t | Ic sendto
+.It Ic m | Ic msendto
+.It Ic a | Ic bsend
+.El
+.Ss TCP mode commands
 .\" .Sh ENVIRONMENT      \" May not be needed
 .\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
 .\" .It Ev ENV_VAR_1
