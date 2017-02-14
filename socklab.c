@@ -349,17 +349,18 @@ char *argv[];
 
 /* affichage de toutes les commandes disponibles */
 	ind[0] = 0;
-	for (nb = 0, i = 0; i < 4 && cmds[nb].row >= 0; nb++)
-		while (i < cmds[nb].row)
+	for (nb = 0, i = 0; i < 4 && cmds[nb].row >= 0; nb++) {
+		while (i < cmds[nb].row) {
 			ind[++i] = nb;
-
+		}
+	}
 	printf("LISTE DES COMMANDES DISPONIBLES:\n");
 	nb++;
 	select_cmd = 0;
 
 	while (nb > 0) {
 		printf("    ");
-		for (i = 0; i < 4; i++)
+		for (i = 0; i < 4; i++) {
 			if (cmds[ind[i]].row == i) {
 				printf("%c %-16s", cmds[ind[i]].letter,
 				       cmds[ind[i]].name);
@@ -369,8 +370,10 @@ char *argv[];
 				printf("%-18s", "<id> select. sock.");
 				select_cmd = 1;
 				nb--;
-			} else
+			} else {
 				printf("%-18s", "");
+			}
+		}
 		printf("\n");
 	}
 	return (1);
