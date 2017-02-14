@@ -1050,6 +1050,9 @@ int argc;
 char *argv[];
 {
 	int so;
+	int enable = 1;
+	char sockfd[8];
+	char *sockarg[] = { "sendto from bsend", sockfd };
 
 /* Quelle socket utiliser ? */
 
@@ -1061,9 +1064,11 @@ char *argv[];
 
 /* Realisation du "setsockopt" */
 
-	set_bool_opt(sock[so], 0);
+	if (setsockopt(sock[so], SOL_SOCKET, SO_BROADCAST, (void *)&enable, sizeof(enable)) < 0) {
+		ERREUR("setsockopt()-SO_BROADCAST");
+		return (-1);
+	}
 
-	sendto_call(1, "");
-
-	return (0);
+	sprintf(sockfd, "%d", sock[so]);
+	return sendto_call(2, sockarg);
 }
