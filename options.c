@@ -110,7 +110,7 @@ int opt;
 	optlen = sizeof(int);
 	if (setsockopt(sock[so], SOL_SOCKET, sockopt[opt].code, (char *)&optval,
 		       optlen) < 0) {
-		sprintf(str, "getsockopt()-%s", sockopt[opt].name);
+		sprintf(str, "setsockopt()-%s", sockopt[opt].name);
 		ERREUR(str);
 		return (-1);
 	}
@@ -143,7 +143,7 @@ int opt;
 	optlen = sizeof(int);
 	if (setsockopt(sock[so], SOL_SOCKET, sockopt[opt].code, (char *)&optval,
 		       optlen) < 0) {
-		sprintf(str, "getsockopt()-%s", sockopt[opt].name);
+		sprintf(str, "setsockopt()-%s", sockopt[opt].name);
 		ERREUR(str);
 		return (-1);
 	}
