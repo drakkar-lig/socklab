@@ -32,9 +32,9 @@ t_sockopt sockopt[] = {
 	,
 	{"sndbuf", SO_SNDBUF, INT_OPT}
 	,
-	{"rcvtimeo", SO_RCVTIMEO, INT_OPT}
+	{"rcvtimeo", SO_RCVTIMEO, TIME_OPT}
 	,
-	{"sndtimeo", SO_SNDTIMEO, INT_OPT}
+	{"sndtimeo", SO_SNDTIMEO, TIME_OPT}
 	,
 	/*{ "bsdcompat",    SO_BSDCOMPAT,   BOOL_OPT        }, */
 	{"", 0, 0}
@@ -209,6 +209,39 @@ int opt;
 	return (0);
 }
 
+/* Modification d'une option time
+ *==========================================================================
+ */
+
+int set_time_opt(so, opt)
+int so;
+int opt;
+{
+	socklen_t optlen;
+	struct timeval optval;
+	char str[100];
+
+	optlen = sizeof(optval);
+	if (getsockopt(sock[so], SOL_SOCKET, sockopt[opt].code, (char *)&optval, &optlen) < 0) {
+		sprintf(str, "getsockopt()-%s", sockopt[opt].name);
+		ERREUR(str);
+		return (-1);
+	}
+
+	get_nb(sockopt[opt].name, "", &(optval.tv_sec));
+	optval.tv_usec = 0;
+
+	optlen = sizeof(optval);
+	if (setsockopt(sock[so], SOL_SOCKET, sockopt[opt].code, (char *)&optval, optlen) < 0) {
+		sprintf(str, "setsockopt()-%s", sockopt[opt].name);
+		ERREUR(str);
+		return (-1);
+	}
+
+	return (0);
+}
+
+
 /* Modification d'une option d'une socket
  *==========================================================================
  */
@@ -232,6 +265,10 @@ int opt;
 
 	case NODELAY_OPT:
 		set_nodelay_opt(so, opt);
+		break;
+
+	case TIME_OPT:
+		set_time_opt(so, opt);
 		break;
 	}
 	return 0;

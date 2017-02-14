@@ -131,6 +131,7 @@ typedef struct {
 #define INT_OPT		2
 #define ASYNC_OPT	3
 #define NODELAY_OPT	4
+#define TIME_OPT	5
 
 /* Modes de fonctionnement possibles: */
 
