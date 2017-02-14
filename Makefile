@@ -5,11 +5,11 @@
 
 # Variables
 #
-CC	= gcc
+CC	?= gcc
 OBJS	= tcp.o udp.o tools.o socklab.o prim.o options.o 
 OPTIONS	= -lreadline -lhistory
 LFLAGS	=
-CFLAGS	= -g -Wall
+CFLAGS	= -Ofast -Wall
 
 # Adaptation a Darwin / MacOS X
 ifeq ($(shell uname), Darwin)
