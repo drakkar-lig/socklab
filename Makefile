@@ -6,67 +6,63 @@
 # Variables
 #
 CC	?= gcc
-OBJS	= tcp.o udp.o tools.o socklab.o prim.o options.o 
-OPTIONS	= -lreadline -lhistory
-LFLAGS	=
-CFLAGS	= -Ofast -Wall
+
+SOURCES = \
+socklab.c \
+prim.c \
+options.c \
+tools.c \
+tcp.c \
+udp.c
+
+TARGETS=socklab
+OBJS	= $(SOURCES:.c=.o)
+
+LDFLAGS	= -lreadline -lhistory
+CFLAGS	= -Wall
 
 # Adaptation a Darwin / MacOS X
 ifeq ($(shell uname), Darwin)
-OPTIONS	= -lreadline
+LDFLAGS	= -lreadline
 endif
 
 # Adaptation a Linux
 ifeq ($(shell uname), Linux)
-OPTIONS	+= -ltermcap
+LDFLAGS	+= -ltermcap
 endif
 
 # Adaptation a FreeBSD
 # Attention : il faut utiliser gmake...
 ifeq ($(shell uname),FreeBSD)
-OPTIONS	+= -ltermcap
+LDFLAGS	+= -ltermcap
 endif
 
 # Adaptation a Solaris
 # Attention : il faut que la lib. readline soit dans le repertoire readline...
 ifeq ($(shell uname),SunOS)
-OPTIONS	+= -ltermcap  -lsocket -lnsl
-LFLAGS 	=  -L../readline
-CFLAGS	+= -I..
+ifneq ("$(wildcard ../readline/readline.h)","")
+CPPFLAGS+= -I..
+LDFLAGS	= -L../readline -ltermcap -lsocket -lnsl
+else
+$(error readline needed in parent directory)
 endif
-
+endif
 
 #
 # Objectifs du makefile:
 #
-all: socklab
+all: $(TARGETS)
 
 socklab: $(OBJS)
-	$(CC) $(LFLAGS) -o $@ $(OBJS) $(OPTIONS)
 
 #
 # Nettoyage
 #
+.PHONY: clean
 clean :
-	rm -f $(OBJS) ; rm -f *~ socklab
+	rm -f $(OBJS) *~ socklab
 
 #
-# Objets
+# Dependencies
 #
-socklab.o : socklab.c socklab.h prim.h tools.h options.h
-	$(CC) $(CFLAGS) -c socklab.c 
-
-prim.o: prim.c socklab.h prim.h 
-	$(CC) $(CFLAGS) -c prim.c 
-
-options.o: options.c socklab.h options.h 
-	$(CC) $(CFLAGS) -c options.c 
-
-tools.o: tools.c socklab.h tools.h 
-	$(CC) $(CFLAGS) -c tools.c 
-
-tcp.o: tcp.c socklab.h tools.h 
-	$(CC) $(CFLAGS) -c tcp.c 
-
-udp.o: udp.c socklab.h tools.h 
-	$(CC) $(CFLAGS) -c udp.c 
+$(OBJS): %.o: %.c %.h socklab.h tcp.h udp.h prim.h tools.h options.h
