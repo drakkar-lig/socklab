@@ -18,7 +18,7 @@ char versionSock[] =
 int sock[MAXSOCK];		/* table des sockets gerees */
 int nbsock;			/* nb de sockets gerees */
 int dft_sock;			/* socket par defaut */
-char cmd_prompt[50];		/* prompt de l'interpreteur de commandes */
+char *cmd_prompt;		/* prompt de l'interpreteur de commandes */
 int exec_mode;			/* mode d'exploitation */
 t_cmd *cmds;			/* Commandes disponibles */
 jmp_buf ihm_env;		/* pour retourner a l'ihm apres un ctrl-C */
@@ -614,6 +614,38 @@ void print_version()
 	printf("%s\n", versionUdp);
 }
 
+/* Replace \[ and \] by readline ignore delimiters (bash-like)
+ * Not robust to malformed prompt strings
+ */
+char *make_prompt(str)
+char *str;
+{
+	char *prompt = malloc(strlen(str));
+	char *p = prompt;
+	char c;
+	int skip = 0;
+	if (prompt == NULL) err(EX_OSERR, "malloc prompt");
+	while ((c = *str++)) {
+		if (c == '\\') {
+			c = *str++;
+			switch (c) {
+#ifdef OSX_READLINE
+				case '[': skip = 1; break;
+				case ']': skip = 0; break;
+#else
+				case '[': *p++ = RL_PROMPT_START_IGNORE; break;
+				case ']': *p++ = RL_PROMPT_END_IGNORE; break;
+#endif
+			}
+		} else {
+			if (skip) continue;
+			*p++ = c;
+		}
+	}
+	*p = '\0';
+	return prompt;
+}
+
 /* MAIN()
  *===================================================================
  *
@@ -628,16 +660,13 @@ char *argv[];
 
 	exec_mode = DFT;
 	cmds = cmds_STD;
-	strlcpy(cmd_prompt, "[1msocklab>[0m ", sizeof(cmd_prompt));
 
 	if (argc == 2) {
 		if (!strcmp(argv[1], "tcp")) {
 			cmds = cmds_TCP;
-			strlcpy(cmd_prompt, "[1msocklab-TCP>[0m ", sizeof(cmd_prompt));
 			exec_mode = TCP;
 		} else if (!strcmp(argv[1], "udp")) {
 			cmds = cmds_UDP;
-			strlcpy(cmd_prompt, "[1msocklab-UDP>[0m ", sizeof(cmd_prompt));
 			exec_mode = UDP;
 		} else if (!strcmp(argv[1], "-v")) {
 			print_version();
@@ -645,6 +674,20 @@ char *argv[];
 		} else
 			usage();
 	}
+#define START_BOLD "\\[\033[1m\\]"
+#define END_BOLD   "\\[\033[0m\\]"
+	switch (exec_mode) {
+		case DFT:
+			cmd_prompt = make_prompt(START_BOLD "socklab> " END_BOLD);
+			break;
+		case TCP:
+			cmd_prompt = make_prompt(START_BOLD "socklab-TCP> " END_BOLD);
+			break;
+		case UDP:
+			cmd_prompt = make_prompt(START_BOLD "socklab-UDP> " END_BOLD);
+			break;
+	}
+
 	nbsock = 0;
 	dft_sock = -1;
 	signal(SIGIO, SIGIO_handler);

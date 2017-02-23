@@ -19,6 +19,8 @@
 #include <netdb.h>
 #include <sys/param.h>
 #include <errno.h>
+#include <err.h>
+#include <sysexits.h>
 #include <sys/time.h>
 #include <setjmp.h>
 #include <memory.h>

@@ -23,7 +23,16 @@ CFLAGS	= -Wall
 
 # Adaptation a Darwin / MacOS X
 ifeq ($(shell uname), Darwin)
+# test for homebrew installed readline
+ifneq ("$(wildcard /usr/local/opt/readline/lib)","")
+CPPFLAGS+=-I/usr/local/opt/readline/include
+LDFLAGS +=-L/usr/local/opt/readline/lib
+else
+# OSX readline does not support invisible characters in prompt
+# http://stackoverflow.com/questions/31329952
+CPPFLAGS+=-DOSX_READLINE
 LDFLAGS	= -lreadline
+endif
 endif
 
 # Adaptation a Linux
