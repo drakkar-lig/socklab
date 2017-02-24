@@ -37,7 +37,8 @@ int host_addr(host, addr)
 char host[];
 u_long *addr;
 {
-	struct hostent *hp;
+	struct addrinfo hints, *ai;
+	int error;
 
 	*addr = inet_addr(host);
 
@@ -48,15 +49,22 @@ u_long *addr;
 	} else {
 		/* elle est sous forme de chaine de caracteres. */
 
-		hp = gethostbyname(host);
-		if (hp == (struct hostent *)NULL) {
-			VIDEO_INV_ERR(herror("gethostbyname()"));
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_flags = AI_CANONNAME;
+		hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
+		if ((error = getaddrinfo(host, NULL, &hints, &ai)) != 0) {
+			VIDEO_INV_ERR(fprintf(stderr, "%s\n", gai_strerror(error)));
 			return (-1);
-		} else {
-
-			*addr = *((u_long *) hp->h_addr);
-			return (0);
 		}
+		for(; ai != NULL; ai = ai->ai_next) {
+			if (ai->ai_family == AF_INET) {
+				*addr = (u_long)(((struct sockaddr_in *)ai->ai_addr)->sin_addr.s_addr);
+				freeaddrinfo(ai);
+				return (0);
+			}
+		}
+		VIDEO_INV_ERR(fprintf(stderr, "no AF_INET address returned\n"));
+		return (-1);
 	}
 }
 

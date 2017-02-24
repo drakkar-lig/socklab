@@ -61,7 +61,7 @@ size_t strlcpy(char *dst, char *src, size_t len) {
 #endif
 
 /* Macro d'affichage en vidéo inverse, Attention: non portable */
-#define VIDEO_INV_ERR(code) 	fprintf(stderr, "\07[7m"); code; fprintf(stderr, "[0m")
+#define VIDEO_INV_ERR(code) 	fprintf(stderr, "\07\033[7m"); code; fprintf(stderr, "\033[0m")
 
 /* Parametrage de l'application */
 
