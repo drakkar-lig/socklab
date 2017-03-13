@@ -170,9 +170,10 @@ char *argv[];
 {
 	struct sockaddr_in sa;
 	socklen_t lensa = sizeof(struct sockaddr_in);
-	struct hostent *hp;
 	int newso;
 	int so;
+    socklen_t len=0;         /* input */
+    char hbuf[NI_MAXHOST];
 
 	if (nbsock == MAXSOCK) {
 		printf("La table interne des sockets est pleine.\n");
@@ -191,16 +192,18 @@ char *argv[];
 		return (-1);
 	}
 
+    
 /* identification de l'appel entrant */
-	hp = gethostbyaddr((char *)&sa.sin_addr, sizeof(sa.sin_addr), AF_INET);
 
-	if (hp == NULL)
+    if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+                        NULL, 0, NI_NAMEREQD))
+        /* Resolution de nom impossible */
 		printf("Un appel de %s (%d) a ete intercepte.\n",
 		       inet_ntoa(sa.sin_addr), htons(sa.sin_port));
 	/*modif P Sicard 2001 htons */
 	else
 		printf("Un appel de %s (%d) a ete intercepte.\n",
-		       hp->h_name, ntohs(sa.sin_port));
+		       hbuf, ntohs(sa.sin_port));
 	/*modif P Sicard 2001 ntohs */
 
 	printf("La connexion est etablie sous l'identificateur %d.\n", newso);
@@ -636,13 +639,14 @@ char *argv[];
 	int lus;
 	struct sockaddr_in sa;
 	socklen_t lensa = sizeof(struct sockaddr_in);
-	struct hostent *hp;
 	static int oob;
 	static int peek;
 	static t_flg flgs[] = { {"oob", &oob},
 	{"peek", &peek}
 	};
 	int so;
+    socklen_t len=0;         /* input */
+    char hbuf[NI_MAXHOST];
 
 /* flags sur la ligne de commande */
 	oob = peek = 0;
@@ -682,15 +686,15 @@ char *argv[];
 	}
 
 /* identification de l'origine des donnees */
-	hp = gethostbyaddr((char *)&sa.sin_addr, sizeof(sa.sin_addr), AF_INET);
-
-	if (hp == NULL)
+    if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+                    NULL, 0, NI_NAMEREQD))
+    /* Resolution de nom impossible */
 		printf("Un message de %d octet(s) a ete recu de %s (%d).\n",
 		       lus, inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
-	/*Modif P. Sicard */
+	/* Modif P. Sicard */
 	else
 		printf("Un message de %d octet(s) a ete recu de %s (%d).\n",
-		       lus, hp->h_name, ntohs(sa.sin_port));
+		       lus, hbuf, ntohs(sa.sin_port));
 	/*Modif P. Sicard */
 
 	msg[lus] = (char)0;

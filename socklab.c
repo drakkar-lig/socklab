@@ -168,7 +168,6 @@ int sock_status()
 	socklen_t lentype;
 	struct sockaddr_in sa;
 	socklen_t lensa;
-	struct hostent *hp;
 	char str[100];
 	int i;
 	int c;
@@ -178,6 +177,9 @@ int sock_status()
 	int maxfdpl;
 	int the_ttl;
 	struct timeval timeout;
+    socklen_t len=0;         /* input */
+    char hbuf[NI_MAXHOST];
+
 
 	if (nbsock == 0) {
 		printf("Aucune socket creee.\n");
@@ -254,17 +256,14 @@ int sock_status()
 			if (sa.sin_addr.s_addr == INADDR_ANY)
 				sprintf(str, "*(%d)", ntohs(sa.sin_port));
 			else {
-				hp = gethostbyaddr((char *)&sa.sin_addr,
-						   sizeof(sa.sin_addr),
-						   AF_INET);
-				if (hp == NULL)
-					sprintf(str, "%s(%d)",
-						inet_ntoa(sa.sin_addr),
-						ntohs(sa.sin_port));
+                if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+                                NULL, 0, NI_NAMEREQD))
+                /* Resolution de nom impossible */
+					sprintf(str, "%s(%d)", inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 				/*Modif P.Sicard ntoh et %s */
 
 				else
-					sprintf(str, "%s(%d)", hp->h_name,
+					sprintf(str, "%s(%d)", hbuf,
 						ntohs(sa.sin_port));
 			}
 			printf("%-25s  ", str);
@@ -273,13 +272,12 @@ int sock_status()
 		lensa = sizeof(struct sockaddr_in);
 		c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa);
 		if (c == 0) {
-			hp = gethostbyaddr((char *)&sa.sin_addr,
-					   sizeof(sa.sin_addr), AF_INET);
-			if (hp == NULL)
-				sprintf(str, "%s(%d)", inet_ntoa(sa.sin_addr),
-					ntohs(sa.sin_port));
+            if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+                            NULL, 0, NI_NAMEREQD))
+            /* Resolution de nom impossible */
+				sprintf(str, "%s(%d)", inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 			else
-				sprintf(str, "%s(%d)", hp->h_name,
+				sprintf(str, "%s(%d)", hbuf,
 					ntohs(sa.sin_port));
 			printf("%-25s  ", str);
 		} else if (errno == ENOTCONN)

@@ -40,22 +40,22 @@ u_long *addr;
 	struct addrinfo hints, *ai;
 	int error;
 
-	*addr = inet_addr(host);
 
-	if (*addr != INADDR_NONE) {
-		/* Cette @ est sous forme standard nbres + points */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
+    
 
-		return (0);
-	} else {
-		/* elle est sous forme de chaine de caracteres. */
-
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_flags = AI_CANONNAME;
-		hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
-		if ((error = getaddrinfo(host, NULL, &hints, &ai)) != 0) {
+    if (!strcmp(host, "*"))
+    {
+        /* sert pour la creation d'une socket passive  */
+        hints.ai_flags = AI_PASSIVE;
+        host=NULL;
+    }
+    /* port mis à "0" car node et service ne peuvent etre à NULL en meme temps */
+				if ((error = getaddrinfo(host, "0", &hints, &ai)) != 0) {
 			VIDEO_INV_ERR(fprintf(stderr, "%s\n", gai_strerror(error)));
 			return (-1);
-		}
+                }
 		for(; ai != NULL; ai = ai->ai_next) {
 			if (ai->ai_family == AF_INET) {
 				*addr = (u_long)(((struct sockaddr_in *)ai->ai_addr)->sin_addr.s_addr);
@@ -65,7 +65,7 @@ u_long *addr;
 		}
 		VIDEO_INV_ERR(fprintf(stderr, "no AF_INET address returned\n"));
 		return (-1);
-	}
+	
 }
 
 /* Obtention d'un numero de port d'un service
@@ -77,20 +77,35 @@ int port_number(name, port)
 char name[];
 int *port;
 {
-	struct servent *sp;
+    struct addrinfo hints, *ai;
+    int error;
+
+	//struct servent *sp;
 
 	if (sscanf(name, "%d", port) == 1) {
 		return (0);
-	} else {
-		sp = getservbyname(name, NULL);
-		if (sp == (struct servent *)NULL) {
-			ERREUR("getservbyname()");	/* !! code d'erreur */
-			return (-1);
-		} else {
-			*port = ntohs(sp->s_port);
-			return (0);
-		}
 	}
+    else
+    {
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
+        if ((error = getaddrinfo(NULL, name, &hints, &ai)) != 0) {
+            VIDEO_INV_ERR(fprintf(stderr, "%s\n", gai_strerror(error)));
+            return (-1);
+        }
+        for(; ai != NULL; ai = ai->ai_next) {
+            if (ai->ai_family == AF_INET) {
+                *port = ntohs((((struct sockaddr_in *)ai->ai_addr)->sin_port));
+                freeaddrinfo(ai);
+                return (0);
+		}
+            
+        }
+    
+	}
+    VIDEO_INV_ERR(fprintf(stderr, "no AF_INET port returned\n"));
+    return (-1);
+
 }
 
 /* Saisie d'une adresse d'un host
@@ -129,12 +144,13 @@ char prompt[];
 		if (strcmp(str, "")) {
 			if (!strcmp(str, "*")) {
 				/* sert pour la creation d'une socket passive par exemple. */
-				*addr = INADDR_ANY;
-				return;
-			} else if (!strcmp(str, ".")) {
+            if (host_addr(str, addr) == 0) /* c'est une machine  passive  */
+                return;
+			} else
+                if (!strcmp(str, ".")) {
 				if (host_addr("127.0.0.1", addr) == 0)
 					return;
-			} else if (host_addr(str, addr) == 0) /* c'est une machine quelconque */
+			} else if (host_addr(str, addr) == 0) /* c'est une machine quelconque  */
 				return;
 		}
 		printf("%s", prompt);
