@@ -196,7 +196,7 @@ char *argv[];
 /* identification de l'appel entrant */
 
     if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
-                        NULL, 0, NI_NAMEREQD))
+                        NULL, 0, NI_NAMEREQD)) 
         /* Resolution de nom impossible */
 		printf("Un appel de %s (%d) a ete intercepte.\n",
 		       inet_ntoa(sa.sin_addr), htons(sa.sin_port));
