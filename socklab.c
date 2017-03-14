@@ -270,7 +270,7 @@ int sock_status()
 		}
 
 		lensa = sizeof(struct sockaddr_in);
-		c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa);
+		c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa); 
 		if (c == 0) {
             if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
                             NULL, 0, NI_NAMEREQD))
