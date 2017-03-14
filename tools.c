@@ -70,7 +70,7 @@ u_long *addr;
 
 /* Obtention d'un numero de port d'un service
  *====================================================================
- *
+
  */
 
 int port_number(name, port)
