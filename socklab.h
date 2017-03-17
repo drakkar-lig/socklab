@@ -72,7 +72,7 @@ size_t strlcpy(char *dst, char *src, size_t len) {
 #define MAX_CMD_ARGC	20	/* nb max. de param dans une commande */
 #define MAX_FLGNAME	10	/* longueur max. d'un flag */
 #define MAX_ITEMNAME	10	/* longueur max. d'un choix d'une liste */
-#define MAX_HOSTNAME	30	/* longueur max. d'un nom de machine */
+#define MAX_HOSTNAME	50	/* longueur max. d'un nom de machine attention avec IPV6 plus long */
 #define MAX_PORTNAME	30	/* longueur max. d'un id. de port */
 #define MAX_SONAME	30	/* longueur max. d'un nom d'option de sock. */
 #define MAX_USAGELEN	70	/* longueur max. d'un message d'aide */

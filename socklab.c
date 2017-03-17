@@ -31,7 +31,8 @@ int terminaison();
 
 t_cmd cmds_STD[] = {
 	{"socket", 0, 's', socket_call, "[tcp|udp]"},
-	{"bind", 0, 'b', bind_call, "[id] [host] [port]"},
+    {"socket6", 0, 'k', socket6_call, "[tcp|udp]"},
+    {"bind", 0, 'b', bind_call, "[id] [host] [port]"},
 	{"listen", 0, 'l', listen_call, "[id] [nb]"},
 	{"accept", 0, 'a', accept_call, "[id] "},
 	{"connect", 0, 'c', connect_call, "[id] [host] [port]"},
@@ -167,6 +168,8 @@ int sock_status()
 	int type;
 	socklen_t lentype;
 	struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
+
 	socklen_t lensa;
 	char str[100];
 	int i;
@@ -179,7 +182,8 @@ int sock_status()
 	struct timeval timeout;
     socklen_t len=0;         /* input */
     char hbuf[NI_MAXHOST];
-
+    char ipstr[INET6_ADDRSTRLEN];
+    int ip,lgstradr=0;
 
 	if (nbsock == 0) {
 		printf("Aucune socket creee.\n");
@@ -204,9 +208,9 @@ int sock_status()
 		ERREUR("select()");
 
 	printf
-	    (" Id  Proto   Adresse                    Connexion                  RWX ?\n");
+	    (" Id  Proto   Adresse                    Connexion               VERSION  RWX ?\n");
 	printf
-	    (" -----------------------------------------------------------------------\n");
+	    (" ------------------------------------------------------------------------------\n");
 
 	for (i = 0; i < nbsock; i++) {
 		printf("%c%-4d", (i == dft_sock ? '>' : ' '), sock[i]);
@@ -225,13 +229,26 @@ int sock_status()
 		case SOCK_DGRAM:
 			printf("UDP ");
 			//modif martin est-ce une sock multicast ?
-			if (getsockopt
-			    (sock[i], IPPROTO_IP, IP_MULTICAST_TTL,
+                
+            ip= domainesock(sock[i]);
+            if (ip==4) /* AF_INET;*/
+                { if (getsockopt(sock[i], IPPROTO_IP, IP_MULTICAST_TTL,
 			     (char *)&the_ttl, &lentype) < 0)
 				// Si le TTL a ete modifie, c'est une sock. multicast...
 				// C'est le seul indice que j'ai trouve.
 				printf
-				    ("pb in getsockopt... sock multicast TTL ? \n");
+				    ("pb in getsockopt... sock ipv4 multicast TTL ? \n");
+                }
+                else //IPV6
+                { if (getsockopt(sock[i], IPPROTO_IPV6, IP_MULTICAST_TTL,
+                                 (char *)&the_ttl, &lentype) < 0)
+                    // Si le TTL a ete modifie, c'est une sock. multicast...
+                    // C'est le seul indice que j'ai trouve.
+                    printf
+                    ("pb in getsockopt... sock ipv4 multicast TTL ? \n");
+                }
+
+                    
 			if (the_ttl == TTL_MCAST)
 				printf("M   ");
 			else if (the_ttl == 1)
@@ -244,12 +261,75 @@ int sock_status()
 			break;
 		}
 
-		lensa = sizeof(struct sockaddr_in);
-		if (getsockname(sock[i], (struct sockaddr *)&sa, &lensa) == -1) {
+		lensa = sizeof(struct sockaddr_in6);
+		if (getsockname(sock[i], (struct sockaddr *)&sa6, &lensa) == -1) {
 			ERREUR("getsockname()");
 			return (-1);
-		}
-
+		}else
+            if (lensa==sizeof(struct sockaddr_in6)) /* socket IPV6 */
+            {
+                if (sa6.sin6_port == 0) // socket non bindee
+                {
+                    printf("%-25c  ", '-');
+                    lgstradr=0;
+                }
+                else
+                {
+                   /* if (sa6.sin6_addr == in6addr_any)
+                        sprintf(str, "*(%d)", ntohs(sa6.sin6_port));
+                    else {*/
+                        if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf),
+                                        NULL, 0, NI_NAMEREQD))
+                        /* Resolution de nom impossible */
+                        { inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
+                            sprintf(str, "%s(%d)", ipstr, ntohs(sa6.sin6_port));
+                        }
+                        else
+                            sprintf(str, "%s(%d)", hbuf,
+                                    ntohs(sa6.sin6_port));
+                    
+                    printf("%-25s  ", str);
+                    if ((lgstradr=strlen(str)) > 25) // passage à la ligne pour adresse suivante
+                        printf("\n");
+                }
+                
+                lensa = sizeof(struct sockaddr_in6);
+                c = getpeername(sock[i], (struct sockaddr *)&sa6, &lensa);
+                if (c == 0) {
+                    if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf),
+                                    NULL, 0, NI_NAMEREQD))
+                    /* Resolution de nom impossible */
+                    { inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
+                      sprintf(str, "%s(%d)", ipstr, ntohs(sa6.sin6_port));
+                    }
+                    else
+                        sprintf(str, "%s(%d)", hbuf,
+                                ntohs(sa6.sin6_port));
+                    if (lgstradr < 25) // on peut ecrire sur la colonne connexion
+                     printf("                                        %-25s  ", str);
+                    else
+                        printf("                    %-45s  ", str);
+                } else if (errno == ENOTCONN)
+                    if (lgstradr < 25)
+                        printf("%-25c  ", '-');
+                    else
+                        printf("                                        %-25c  ", '-');
+                else
+                    //modif Pascal il faut continuer pour les autres sockets, modif du message d'erreur
+                {
+                    printf("%-25s  ", "-erreur deconnecte");
+                    //ERREUR ("getpeername()");
+                    //return (-1);
+                }
+                printf("%s  ", "ipv6");
+            }
+        else /*socket IPV4*/
+            {
+            lensa = sizeof(struct sockaddr_in);
+            if (getsockname(sock[i], (struct sockaddr *)&sa, &lensa) == -1) {
+                ERREUR("getsockname()");
+                return (-1);
+            }
 		if (sa.sin_port == 0)
 			printf("%-25c  ", '-');
 		else {
@@ -259,8 +339,10 @@ int sock_status()
                 if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
                                 NULL, 0, NI_NAMEREQD))
                 /* Resolution de nom impossible */
-					sprintf(str, "%s(%d)", inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
-				/*Modif P.Sicard ntoh et %s */
+                    {
+                    inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
+					sprintf(str, "%s(%d)", ipstr, ntohs(sa.sin_port));
+                    }
 
 				else
 					sprintf(str, "%s(%d)", hbuf,
@@ -270,12 +352,15 @@ int sock_status()
 		}
 
 		lensa = sizeof(struct sockaddr_in);
-		c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa); 
+		c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa);
 		if (c == 0) {
             if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
                             NULL, 0, NI_NAMEREQD))
             /* Resolution de nom impossible */
-				sprintf(str, "%s(%d)", inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
+            {
+                inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
+                sprintf(str, "%s(%d)", ipstr, ntohs(sa.sin_port));
+            }
 			else
 				sprintf(str, "%s(%d)", hbuf,
 					ntohs(sa.sin_port));
@@ -289,7 +374,8 @@ int sock_status()
 			//ERREUR ("getpeername()");
 			//return (-1);
 		}
-
+                printf("%s  ", "ipv4");
+        }
 		printf("%c", (FD_ISSET(sock[i], &readfds) ? 'R' : '.'));
 		printf("%c", (FD_ISSET(sock[i], &writefds) ? 'W' : '.'));
 		printf("%c", (FD_ISSET(sock[i], &exceptfds) ? 'X' : '.'));
