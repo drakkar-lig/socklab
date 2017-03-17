@@ -23,5 +23,6 @@ void get_id_sock();
 int ask();
 void display_inet_addr();
 void ERREUR();
+int domainesock();
 
 #endif				/* _TOOLS_H_ */

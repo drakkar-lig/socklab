@@ -33,37 +33,48 @@ int len;
  *
  */
 
-int host_addr(host, addr)
+int host_addr(host, addr, version)
 char host[];
-u_long *addr;
+struct sockaddr *addr;
+int version;
+
 {
 	struct addrinfo hints, *ai;
 	int error;
 
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
+   if (version==4) hints.ai_family = AF_INET; // socket IPV4
+       else hints.ai_family = AF_INET6;// socket IPV6
     
-
+         /*  printf("host %s\n",host);*/
     if (!strcmp(host, "*"))
     {
         /* sert pour la creation d'une socket passive  */
         hints.ai_flags = AI_PASSIVE;
         host=NULL;
     }
-    /* port mis à "0" car node et service ne peuvent etre à NULL en meme temps */
+    /* port mis à "0" car node et service ne peuvent etre a NULL en meme temps */
 				if ((error = getaddrinfo(host, "0", &hints, &ai)) != 0) {
 			VIDEO_INV_ERR(fprintf(stderr, "%s\n", gai_strerror(error)));
 			return (-1);
                 }
 		for(; ai != NULL; ai = ai->ai_next) {
-			if (ai->ai_family == AF_INET) {
-				*addr = (u_long)(((struct sockaddr_in *)ai->ai_addr)->sin_addr.s_addr);
-				freeaddrinfo(ai);
-				return (0);
-			}
-		}
-		VIDEO_INV_ERR(fprintf(stderr, "no AF_INET address returned\n"));
+            if (ai->ai_family == AF_INET) {
+                    *addr = *((struct sockaddr *)ai->ai_addr);
+                    freeaddrinfo(ai);
+                    return (0);}
+            if (ai->ai_family == AF_INET6){
+                *((struct sockaddr_in6 *)addr) = *((struct sockaddr_in6 *)ai->ai_addr);
+                /*attention sockaddr_in6 est plus grand que sockaddr*/
+                
+                /*affichage adresse)*/
+               /* display_inet_addr((struct sockaddr *)addr);*/
+                freeaddrinfo(ai);
+                return (0);}        }
+		
+		VIDEO_INV_ERR(fprintf(stderr, "no AF_INET(6) address returned\n"));
+            
 		return (-1);
 	
 }
@@ -88,7 +99,7 @@ int *port;
     else
     {
         memset(&hints, 0, sizeof(hints));
-        hints.ai_family = AF_INET; // AF_UNSPEC AF_INET6
+        hints.ai_family = AF_UNSPEC; // fonctionne pour IPV4 et IPV6
         if ((error = getaddrinfo(NULL, name, &hints, &ai)) != 0) {
             VIDEO_INV_ERR(fprintf(stderr, "%s\n", gai_strerror(error)));
             return (-1);
@@ -99,6 +110,13 @@ int *port;
                 freeaddrinfo(ai);
                 return (0);
 		}
+            else
+                if (ai->ai_family == AF_INET6) {
+                    *port = ntohs((((struct sockaddr_in6 *)ai->ai_addr)->sin6_port));
+                    freeaddrinfo(ai);
+                    return (0);
+
+                }
             
         }
     
@@ -118,23 +136,31 @@ int *port;
  */
 void get_itf_host();
 
-void get_host(name, addr)
+void get_host(name, addr, version)
 char name[];
-u_long *addr;
+struct sockaddr *addr;
+int version;
+
+
 {
-	get_itf_host(name, addr, "Host ?: ");
+    get_itf_host(name, addr, version, "Host ?: ");
 }
 
-void get_itf(name, addr)
+void get_itf(name, addr, version)
 char name[];
-u_long *addr;
+struct sockaddr *addr;
+int version;
+
 {
-	get_itf_host(name, addr, "Adresse de l'interface ?: ");
+	get_itf_host(name, addr,version, "Adresse de l'interface ?: ");
 }
 
-void get_itf_host(name, addr, prompt)
+void get_itf_host(name, addr,version, prompt)
 char name[];
-u_long *addr;
+struct sockaddr *addr;
+int version;
+
+
 char prompt[];
 {
 	char str[MAX_HOSTNAME];
@@ -142,15 +168,7 @@ char prompt[];
 	strlcpy(str, name, sizeof(str));
 	for (;;) {
 		if (strcmp(str, "")) {
-			if (!strcmp(str, "*")) {
-				/* sert pour la creation d'une socket passive par exemple. */
-            if (host_addr(str, addr) == 0) /* c'est une machine  passive  */
-                return;
-			} else
-                if (!strcmp(str, ".")) {
-				if (host_addr("127.0.0.1", addr) == 0)
-					return;
-			} else if (host_addr(str, addr) == 0) /* c'est une machine quelconque  */
+			if (host_addr(str, addr, version) == 0) /* c'est une machine quelconque  */
 				return;
 		}
 		printf("%s", prompt);
@@ -397,11 +415,36 @@ char prompt[];
  */
 
 void display_inet_addr(addr)
-struct sockaddr_in addr;
+struct sockaddr *addr;
 {
-	printf("     * Domaine: %d\n", (int)addr.sin_family);
-	printf("     * Adresse: %s\n", inet_ntoa(addr.sin_addr));
-	printf("     * Port:    %d\n", ntohs(addr.sin_port));
+    char ipstr[INET6_ADDRSTRLEN];
+    char ipver;
+    void *p;
+    int port;
+    
+    if (addr->sa_family == AF_INET) { // IPv4
+        struct sockaddr_in *ipv4 = (struct sockaddr_in *)addr;
+        p = &(ipv4->sin_addr);
+        port=ntohs(ipv4->sin_port);
+        ipver = '4';
+    }
+    else { // IPv6
+        struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)addr;
+        p = &(ipv6->sin6_addr);
+        port=ntohs(ipv6->sin6_port);
+        ipver = '6';
+    }
+    
+    // Conversion de l'adresse IP en une chaîne de caractères
+    inet_ntop(addr->sa_family, p, ipstr, sizeof ipstr);
+    printf(" Adresse IPv%c: %s\n", ipver, ipstr);
+        printf("Port:    %d\n", port);
+   	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+    
+    if (getnameinfo(addr, addr->sa_len, hbuf, sizeof(hbuf), sbuf,
+                    sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0)
+        printf("Host Name=%s, Service Name =%s", hbuf, sbuf);
+
 	printf("\n");
 }
 
@@ -415,4 +458,24 @@ void ERREUR(msg)
 char msg[];
 {
 	VIDEO_INV_ERR(perror(msg));
+}
+
+/* recuperation version IP d une socket
+*=======================================================================
+* retourne 4 ou 6  suivant l'option IPV6_BINDV6ONLY
+* retourne -1 en cas d'erreur 
+ */
+
+int domainesock (socket)
+int socket;
+{
+    int only = 0;
+    socklen_t size;
+    if (getsockopt(socket, IPPROTO_IPV6, IPV6_BINDV6ONLY,
+                   &only, &size) < 0)
+        return (4); /* IPV4 a priori */
+
+    if (only) /* IPV6 ONLY */
+        return (6);
+    return (-1);
 }
