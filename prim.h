@@ -11,9 +11,12 @@
 char *versionPrim;
 
 int socket_call();
+int socket6_call();
+
 int msocket_call();
 int msetmulticast();
 int bind_call();
+
 int listen_call();
 int accept_call();
 int connect_call();

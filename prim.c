@@ -64,6 +64,60 @@ char *argv[];
 	return (dft_sock);
 }
 
+/* Primitive socket6() pour ipv6
+ *=======================================================================
+ *
+ */
+int socket6_call(argc, argv)
+int argc;
+char *argv[];
+{
+   
+    int s;
+    int proto;
+    static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
+    if (nbsock == MAXSOCK) {
+        printf("La table interne des sockets est pleine.\n");
+        return (-1);
+    }
+    
+    if (argc > 1)
+        get_choice("Protocole", list, 2, argv[1], &proto);
+        else
+            get_choice("Protocole", list, 2, "", &proto);
+            
+        /* creation de la socket */
+            s = socket(AF_INET6, proto, 0);
+            if (s < 0) {
+                ERREUR("socket()");
+                return (-1);
+            }
+    /* force IPV6, socket ne peut recevoir que des paquets IPV6 */
+     int only=1;
+
+        if (setsockopt(s, IPPROTO_IPV6, IPV6_BINDV6ONLY,
+               &only, sizeof only) < 0) {
+        ERREUR("setsockopt not IPv6 only");
+            return (-1);}
+    
+    /* pour la reception de SIGIO */
+    if (fcntl(s, F_SETOWN, getpid()) < 0) {
+        ERREUR("fcntl()-SET_OWN");
+        if (close(s) == -1)
+            ERREUR("close()");
+        
+        return (-1);
+    }
+    
+    if (DFT_MODE)
+        printf("La socket est identifiee par l'identificateur %d\n", s);
+        
+    /* modification de la table */
+        sock[nbsock] = s;
+        dft_sock = nbsock++;
+        return (dft_sock);
+}
+
 /* Primitive bind()
  *=======================================================================
  *
@@ -73,57 +127,82 @@ int bind_call(argc, argv)
 int argc;
 char *argv[];
 {
-	struct sockaddr_in sa;
 	socklen_t lensa = sizeof(struct sockaddr_in);
 	int port = -1;
-	unsigned long addr = INADDR_NONE;
+	struct sockaddr_in6 addr ;
 	int so;
+    int ip;
+
 
 /* id socket ? */
 	if (argc > 1)
 		get_id_sock(argv[1], &so);
 	else
 		get_id_sock("", &so);
+        
+        ip= domainesock(sock[so]); /* domaine de la socket 4 ou 6 */
+        
+    /* host ? */
+        if (argc > 2)
+            get_host(argv[2], &addr,ip);
+            else
+                get_host("", &addr, ip);
+                
+    /* port ? */
+        if (argc > 3)
+            get_port(argv[3], &port);
+            else
+                get_port("", &port);
 
-/* host ? */
-	if (argc > 2)
-		get_host(argv[2], &addr);
-	else
-		get_host("", &addr);
-
-/* port ? */
-	if (argc > 3)
-		get_port(argv[3], &port);
-	else
-		get_port("", &port);
-
-/* Initialisation de l'adresse */
-
-	/* bzero((char *)&sa, sizeof(struct sockaddr_in)); cc96-1 */
-	memset((char *)&sa, 0, sizeof(struct sockaddr_in));
-
-	sa.sin_family = AF_INET;
-	port = htons((u_short) port);	/* Modif P. Sicard */
-	sa.sin_port = port;
-	sa.sin_addr.s_addr = addr;
-
+    if (ip==4) /* socket ipv4 */
+    {
+	((struct sockaddr_in*)&addr)->sin_port = htons((u_short) port);
+	lensa = sizeof(struct sockaddr_in);
 /* attachement de la socket */
-	if (bind(sock[so], (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+	if (bind(sock[so], (struct sockaddr *)&addr, lensa) < 0) {
 		ERREUR("bind()");
 		return (-1);
 	}
 
 	if (port == 0) {	/* obtention du port choisi par le systeme */
-		getsockname(sock[so], (struct sockaddr *)&sa, &lensa);
-		port = ntohs(sa.sin_port);	/* Modif P. Sicard */
-
+        if (getsockname(sock[so], (struct sockaddr *)&addr, &lensa)== -1) {
+            ERREUR("getsockname()");
+            return (-1);
+        }
+		port = ntohs((u_short)(((struct sockaddr_in*)&addr)->sin_port));
+        
 		if (DFT_MODE)
-			printf("Le port %d a ete affecte a la socket\n", port);	/* Modif P. Sicard */
+			printf("Le port %d a ete affecte a la socket\n", port);	
 
 	}
-
+    }
+    else  /*IPV6 */
+    {
+            addr.sin6_port = htons((u_short) port);
+            /*affichage adresse)*/
+            /*  display_inet_addr((struct sockaddr *)&addr);*/
+            lensa = sizeof(struct sockaddr_in6);
+            /* attachement de la socket */
+            if (bind(sock[so], (struct sockaddr *)&addr, lensa) < 0) {
+                            ERREUR("bind()");
+                            return (-1);
+                        }
+    
+    if (port == 0) {	/* obtention du port choisi par le systeme */
+        if (getsockname(sock[so], (struct sockaddr *)&addr, &lensa)== -1) {
+            ERREUR("getsockname()");
+            return (-1);
+        }
+        
+        port = ntohs(addr.sin6_port);	/* Modif P. Sicard */
+        
+        if (DFT_MODE)
+            printf("Le port %d a ete affecte a la socket\n", port);	/* Modif P. Sicard */
+    }
+    }
 	return (port);
 }
+
 
 /* Primitive listen()
  *=======================================================================
@@ -169,6 +248,10 @@ int argc;
 char *argv[];
 {
 	struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
+    int ip;
+    char ipstr[INET6_ADDRSTRLEN];
+
 	socklen_t lensa = sizeof(struct sockaddr_in);
 	int newso;
 	int so;
@@ -186,7 +269,17 @@ char *argv[];
 	else
 		get_id_sock("", &so);
 
-	newso = accept(sock[so], (struct sockaddr *)&sa, &lensa);
+        ip=domainesock(so);
+        if (ip==4) /* AF_INET;*/
+        {
+            lensa=sizeof(struct sockaddr_in);
+            newso = accept(sock[so], (struct sockaddr *)&sa, &lensa);
+        }
+            else
+            {
+                lensa=sizeof(struct sockaddr_in6);
+                newso = accept(sock[so], (struct sockaddr *)&sa6, &lensa);
+            }
 	if (newso < 0) {
 		ERREUR("accept()");
 		return (-1);
@@ -194,20 +287,34 @@ char *argv[];
 
     
 /* identification de l'appel entrant */
-
+    if (ip==4)
+    {
     if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
-                        NULL, 0, NI_NAMEREQD)) 
+                        NULL, 0, NI_NAMEREQD))
         /* Resolution de nom impossible */
-		printf("Un appel de %s (%d) a ete intercepte.\n",
-		       inet_ntoa(sa.sin_addr), htons(sa.sin_port));
-	/*modif P Sicard 2001 htons */
+    { inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
+        printf("Un appel de %s (%d) a ete intercepte.\n", ipstr, ntohs(sa.sin_port));
+    }
 	else
 		printf("Un appel de %s (%d) a ete intercepte.\n",
 		       hbuf, ntohs(sa.sin_port));
-	/*modif P Sicard 2001 ntohs */
+    }
+    else // IPV6
+    {
+        if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf),
+                        NULL, 0, NI_NAMEREQD))
+        /* Resolution de nom impossible */
+        { inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
+            printf("Un appel de %s (%d) a ete intercepte.\n", ipstr, ntohs(sa6.sin6_port));
+        }
+
+        else
+            printf("Un appel de %s (%d) a ete intercepte.\n",
+                   hbuf, ntohs(sa6.sin6_port));
+    }
 
 	printf("La connexion est etablie sous l'identificateur %d.\n", newso);
-
+       
 /* modification de la table */
 	sock[nbsock] = newso;
 	dft_sock = nbsock++;
@@ -224,9 +331,11 @@ int argc;
 char *argv[];
 {
 	int port = -1;
-	u_long addr = INADDR_NONE;
-	struct sockaddr_in sa;
+	struct sockaddr_in6 addr ; /* peut servir en ipv4 ou ipv6 */
+
 	int so;
+    int ip;
+    int size;
 
 /* id socket ? */
 	if (argc > 1)
@@ -234,11 +343,13 @@ char *argv[];
 	else
 		get_id_sock("", &so);
 
+    ip= domainesock(sock[so]); /* domaine de la socket 4 ou 6 */
+
 /* host ? */
 	if (argc > 2)
-		get_host(argv[2], &addr);
+		get_host(argv[2], &addr,ip);
 	else
-		get_host("", &addr);
+		get_host("", &addr,ip);
 
 /* port ? */
 	if (argc > 3)
@@ -246,21 +357,24 @@ char *argv[];
 	else
 		get_port("", &port);
 
-/* initialisation de l'adresse */
-
-	memset((char *)&sa, 0, sizeof(struct sockaddr_in));
-
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons((u_short) port);
-	sa.sin_addr.s_addr = addr;
-
+if (ip==4)
+	/* AF_INET;*/
+    {
+        ((struct sockaddr_in*)&addr)->sin_port = htons((u_short) port);
+        size=sizeof(struct sockaddr_in);
+    }
+	else
+    {
+        ((struct sockaddr_in6*)&addr)->sin6_port = htons((u_short) port);
+        size=sizeof(struct sockaddr_in6);
+    }
 /* connexion */
-	if (connect(sock[so], (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+	if (connect(sock[so], (struct sockaddr *)&addr, size) < 0) {
 		ERREUR("connect()");
 		return (-1);
 	}
 
-	printf("Connexion etablie.\n");
+    	printf("Connexion etablie.\n");
 
 /* mise a jour de la table */
 	return (0);
@@ -451,12 +565,11 @@ int sendto_call(argc, argv)
 int argc;
 char *argv[];
 {
-	int nb;
+	int nb, ip, size;
 	char *msg;
 	int total = 0;
 	int port = -1;
-	struct sockaddr_in sa;
-	u_long addr = INADDR_NONE;
+	struct sockaddr_in6 addr;
 	static int oob;
 	static int dontroute;
 	static int loop;
@@ -479,11 +592,13 @@ char *argv[];
 	else
 		get_id_sock("", &so);
 
+        ip= domainesock(sock[so]); /* domaine de la socket 4 ou 6 */
+
 /* host ? */
 	if (argc > 2)
-		get_host(argv[2], &addr);
+		get_host(argv[2], &addr,ip);
 	else
-		get_host("", &addr);
+		get_host("", &addr,ip);
 
 /* port ? */
 	if (argc > 3)
@@ -500,19 +615,23 @@ char *argv[];
 	nb = MAX_BUFFER;
 	get_msg(&msg, &nb);
 
-/* initialisation de l'adresse */
 
-	memset((char *)&sa, 0, sizeof(struct sockaddr_in));
-
-	sa.sin_family = AF_INET;
-	sa.sin_addr.s_addr = addr;
-	sa.sin_port = htons((u_short) port);
-
+    if (ip==4)
+    /* AF_INET;*/
+    {
+	((struct sockaddr_in *)&addr)->sin_port = htons((u_short) port);
+     size=sizeof(struct sockaddr_in);
+    }
+    else
+    {
+        ((struct sockaddr_in6*)&addr)->sin6_port = htons((u_short) port);
+        size=sizeof(struct sockaddr_in6);
+    }
 /* envoi du message */
 	do {
 		nb = sendto(sock[so], msg, (unsigned int)strlen(msg),
 			    MSG_OOB * oob | MSG_DONTROUTE * dontroute,
-			    (struct sockaddr *)&sa, sizeof(sa));
+			    (struct sockaddr *)&addr, size);
 		if (nb >= 0)
 			if (loop)
 				printf("%d octet(s) envoye(s) (total %d)\n", nb,
@@ -632,12 +751,12 @@ int recvfrom_call(argc, argv)
 int argc;
 char *argv[];
 {
-	u_long addr = INADDR_NONE;
-	int port = 0;
 	int nb;
 	char *msg;
 	int lus;
 	struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
+
 	socklen_t lensa = sizeof(struct sockaddr_in);
 	static int oob;
 	static int peek;
@@ -647,6 +766,9 @@ char *argv[];
 	int so;
     socklen_t len=0;         /* input */
     char hbuf[NI_MAXHOST];
+    int ip;
+    char ipstr[INET6_ADDRSTRLEN];
+
 
 /* flags sur la ligne de commande */
 	oob = peek = 0;
@@ -669,34 +791,54 @@ char *argv[];
 			get_nb("Nb d'octets a lire", "", &nb);
 	}
 	msg = (char *)malloc((nb + 1) * sizeof(char));
-/* initialisation de l'adresse */
+    
+    ip= domainesock(sock[so]); /* domaine de la socket 4 ou 6 */
 
-	memset((char *)&sa, 0, sizeof(struct sockaddr_in));
+    if (ip==4) /* AF_INET;*/
+    {
+        lensa=sizeof(struct sockaddr_in);
+    /* lecture */
+        lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek,
+                       (struct sockaddr *)&sa, &lensa);
+    }
+    else
+    {
+        lensa=sizeof(struct sockaddr_in6);
+        lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek,
+                       (struct sockaddr *)&sa6, &lensa);
+        }
 
-	sa.sin_family = AF_INET;
-	sa.sin_addr.s_addr = htonl(addr);	/*Modif P.Sicard */
-	sa.sin_port = htons((u_short) port);
 
-/* lecture */
-	lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek,
-		       (struct sockaddr *)&sa, &lensa);
 	if (lus < 0) {
 		ERREUR("recvfrom()");
 		return (-1);
 	}
-
-/* identification de l'origine des donnees */
-    if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
-                    NULL, 0, NI_NAMEREQD))
-    /* Resolution de nom impossible */
-		printf("Un message de %d octet(s) a ete recu de %s (%d).\n",
-		       lus, inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
-	/* Modif P. Sicard */
-	else
-		printf("Un message de %d octet(s) a ete recu de %s (%d).\n",
-		       lus, hbuf, ntohs(sa.sin_port));
-	/*Modif P. Sicard */
-
+    
+    /* identification de l'origine des donnees */
+    if (ip==4)
+    {
+        if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+                        NULL, 0, NI_NAMEREQD))
+        /* Resolution de nom impossible */
+        { inet_ntop(sa.sin_family,
+                    &(sa.sin_addr), ipstr, sizeof ipstr);
+            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
+        }
+        else
+            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
+    }
+    else
+        // IPV6
+    {
+        if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf),
+                        NULL, 0, NI_NAMEREQD))
+        /* Resolution de nom impossible */
+        { inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
+            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
+        }
+        else
+            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
+        }
 	msg[lus] = (char)0;
 	printf("Message=<%s>\n", msg);
 	free(msg);
