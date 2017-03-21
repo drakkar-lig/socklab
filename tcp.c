@@ -11,7 +11,7 @@
 char *versionTcp =
     "tcp.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
 
-/* Creation d'une socket passive
+/* Creation d'une socket passive en ipv4
  *=======================================================================
  *
  */
@@ -46,7 +46,42 @@ char *argv[];
 	return (0);
 }
 
-/* Creation d'une socket active + connexion
+/* Creation d'une socket passive en ipv6
+ *=======================================================================
+ *
+ */
+
+int TCP_passive6(argc, argv)
+int argc;
+char *argv[];
+{
+    static char *socket_argv[] = { "socket6", "tcp", 0 };
+    static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
+    static char *listen_argv[] = { "listen", ".", "5", 0 };
+    static char *close_argv[] = { "close", ".", 0 };
+    int so;
+    int port;
+    
+    so = socket6_call(2, socket_argv);
+    if (so == -1)
+        return (-1);
+    
+    port = bind_call(4, bind_argv);
+    if (port == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
+    
+    if (listen_call(3, listen_argv) == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
+    
+    printf("Socket (IPV6) TCP creee: id=%d, port=%d\n", sock[so], port);
+    return (0);
+}
+
+/* Creation d'une socket ipv4 active + connexion
  *========================================================================
  *
  */
@@ -63,23 +98,20 @@ char *argv[];
 	static char *connect_argv[] = { "connnect", ".", c_host, c_port, 0 };
 	int so;
 	int port;
-	u_long addr;
-	struct in_addr in_addr;
+	struct sockaddr_in addr;
+   
 
 	if (nbsock == MAXSOCK) {
 		printf("La table interne des sockets est pleine.\n");
 		return (-1);
 	}
-
 /* host ? */
 	if (argc > 1)
-		get_host(argv[1], &addr);
+		get_host(argv[1], (struct sockaddr *)&addr, 4);
 	else
-		get_host("", &addr);
+		get_host("", (struct sockaddr *)&addr, 4);
 
-	//in_addr.s_addr = ntohl(addr);
-	in_addr.s_addr = addr;
-	strlcpy(c_host, (char *)inet_ntoa(in_addr), sizeof(c_host));
+        inet_ntop(addr.sin_family, &(addr.sin_addr), c_host, sizeof(c_host));
 
 /* port ? */
 	if (argc > 2)
@@ -112,6 +144,68 @@ char *argv[];
 	return (0);
 }
 
+/* Creation d'une socket ipv6 active + connexion
+ *========================================================================
+ *
+ */
+
+int TCP_connect6(argc, argv)
+int argc;
+char *argv[];
+{
+    static char *socket_argv[] = { "socket6", "tcp", 0 };
+    static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
+    static char *close_argv[] = { "close", ".", 0 };
+    static char c_host[20];
+    static char c_port[20];
+    static char *connect_argv[] = { "connect", ".", c_host, c_port, 0 };
+    int so;
+    int port;
+    struct sockaddr_in6 addr;
+    
+    
+    if (nbsock == MAXSOCK) {
+        printf("La table interne des sockets est pleine.\n");
+        return (-1);
+    }
+    /* host ? */
+    if (argc > 1)
+        get_host(argv[1], (struct sockaddr *)&addr, 6);
+        else
+            get_host("", (struct sockaddr *)&addr, 6);
+            
+            inet_ntop(addr.sin6_family, &(addr.sin6_addr), c_host, sizeof(c_host));
+            
+        /* port ? */
+            if (argc > 2)
+                get_port(argv[2], &port);
+                else
+                    get_port("", &port);
+                    
+                    sprintf(c_port, "%d", port);
+                    
+                /* creation de la socket */
+                    so = socket6_call(2, socket_argv);
+                    if (so == -1)
+                        return (-1);
+    
+    /* affectation d'une adresse */
+    port = bind_call(4, bind_argv);
+    if (port == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
+    
+    printf("Socket(IPv6) TCP creee: id=%d, port=%d\n", sock[so], port);
+    
+    /* connexion */
+    if (connect_call(4, connect_argv) == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
+    
+    return (0);
+}
 /* Envoi de donnees urgentes
  *=========================================================================
  *
