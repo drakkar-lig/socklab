@@ -11,6 +11,7 @@
 char *versionUdp;
 
 int UDP_socket();
+int UDP_socket6();
 int UDP_recvfrom();
 int UDP_sendto();
 
