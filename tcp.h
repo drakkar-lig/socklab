@@ -11,6 +11,8 @@
 char *versionTcp;
 int TCP_passive();
 int TCP_connect();
+int TCP_passive6();
+int TCP_connect6();
 int TCP_usend();
 int TCP_urecv();
 
