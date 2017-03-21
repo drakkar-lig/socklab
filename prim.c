@@ -110,7 +110,7 @@ char *argv[];
     }
     
     if (DFT_MODE)
-        printf("La socket est identifiee par l'identificateur %d\n", s);
+        printf("La socket IPV6 est identifiee par l'identificateur %d\n", s);
         
     /* modification de la table */
         sock[nbsock] = s;
