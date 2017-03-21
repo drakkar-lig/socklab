@@ -59,6 +59,7 @@ t_cmd cmds_STD[] = {
 
 t_cmd cmds_UDP[] = {
 	{"socket", 0, 's', UDP_socket, ""},
+    {"socket6", 0, 'n', UDP_socket6, ""},
 	{"msocket", 0, 'c', msocket_call, ""},
 	{"close", 0, 'k', close_call, "[id]"},
 	{"options", 0, 'o', socket_options, "[id] [nom]..."},
@@ -81,8 +82,10 @@ t_cmd cmds_UDP[] = {
 
 t_cmd cmds_TCP[] = {
 	{"passive", 0, 'p', TCP_passive, ""},
+    {"passive6", 0, 'v', TCP_passive6, ""},
 	{"accept", 0, 'a', accept_call, "[id]"},
 	{"connect", 0, 'c', TCP_connect, "[host] [port]"},
+    {"connect6", 0, 'e', TCP_connect6, "[host] [port]"},
 	{"close", 0, 'k', close_call, "[id]"},
 	{"shutdown", 0, 'h', shutdown_call, "[id] [in|out|both]"},
 	{"options", 0, 'o', socket_options, "[id] [nom]..."},
@@ -183,7 +186,7 @@ int sock_status()
     socklen_t len=0;         /* input */
     char hbuf[NI_MAXHOST];
     char ipstr[INET6_ADDRSTRLEN];
-    int ip,lgstradr=0;
+    int ip,lgstradr=0,lgstradr2=0 ;
 
 	if (nbsock == 0) {
 		printf("Aucune socket creee.\n");
@@ -305,11 +308,21 @@ int sock_status()
                     else
                         sprintf(str, "%s(%d)", hbuf,
                                 ntohs(sa6.sin6_port));
-                    if (lgstradr < 25) // on peut ecrire sur la colonne connexion
-                     printf("                                        %-25s  ", str);
-                    else
-                        printf("                    %-45s  ", str);
-                } else if (errno == ENOTCONN)
+                    lgstradr2=strlen(str);
+                    if (lgstradr < 25) // passage a la ligne non fait
+                     { if (lgstradr2 < 25)//affichage normal
+                            printf("%-25s  ", str);
+                        else //il faut passer à la ligne pour la deuxieme adresse
+                            printf("                    %-45s  ", str);
+                            }else //passage a la ligne fait
+                            {
+                                if (lgstradr2 < 25) //  on peut ecrire sur la colonne connexion
+                                    printf("                                        %-25s  ", str);
+                                else
+                                    printf("                    %-45s  ", str);
+                            }
+                            } else
+                    if (errno == ENOTCONN)
                     if (lgstradr < 25)
                         printf("%-25c  ", '-');
                     else
