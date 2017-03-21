@@ -168,9 +168,20 @@ char prompt[];
 	strlcpy(str, name, sizeof(str));
 	for (;;) {
 		if (strcmp(str, "")) {
-			if (host_addr(str, addr, version) == 0) /* c'est une machine quelconque  */
-				return;
-		}
+             if (!strcmp(str, ".")) {
+                 if (version==4)
+                 {if (host_addr("127.0.0.1", addr,version) == 0)
+                     return;}
+                 else //IPV6
+                 if (host_addr("::1", addr,version) == 0)
+                         return;
+             }
+                 else
+                     
+                     if (host_addr(str, addr, version) == 0) /* c'est une machine quelconque  */
+                         return;
+		
+        }
 		printf("%s", prompt);
 /*		printf("Host (\"*\"=INADDR_ANY, \".\"=<local host>) ?: ");*/
 		rl_gets(str, sizeof(str));
