@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 char *versionPrim =
-    "prim.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
+    "prim.c : $Revision: 386 $ du $Date: 2017-03-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
 
 /* Toutes les primitives n'ont que deux parametres: argc et argv qui ont le
  * meme sens que pour main(). Ici, ils s'appliquent aux arguments qui figuraient
@@ -158,7 +158,7 @@ char *argv[];
     {
 	((struct sockaddr_in*)&addr)->sin_port = htons((u_short) port);
 	lensa = sizeof(struct sockaddr_in);
-/* attachement de la socket */
+    /* attachement de la socket */
 	if (bind(sock[so], (struct sockaddr *)&addr, lensa) < 0) {
 		ERREUR("bind()");
 		return (-1);
@@ -252,10 +252,9 @@ char *argv[];
     int ip;
     char ipstr[INET6_ADDRSTRLEN];
 
-	socklen_t lensa = sizeof(struct sockaddr_in);
+	socklen_t lensa;
 	int newso;
 	int so;
-    socklen_t len=0;         /* input */
     char hbuf[NI_MAXHOST];
 
 	if (nbsock == MAXSOCK) {
@@ -269,7 +268,7 @@ char *argv[];
 	else
 		get_id_sock("", &so);
 
-        ip=domainesock(so);
+        ip=domainesock(sock[so]); /*domaine de la socket 4 ou 6 */
         if (ip==4) /* AF_INET;*/
         {
             lensa=sizeof(struct sockaddr_in);
@@ -289,7 +288,7 @@ char *argv[];
 /* identification de l'appel entrant */
     if (ip==4)
     {
-    if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf),
+    if (getnameinfo((struct sockaddr *)&sa, lensa, hbuf, sizeof(hbuf),
                         NULL, 0, NI_NAMEREQD))
         /* Resolution de nom impossible */
     { inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
@@ -301,17 +300,20 @@ char *argv[];
     }
     else // IPV6
     {
-        if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf),
+        if (getnameinfo((struct sockaddr *)&sa6, lensa, hbuf, sizeof(hbuf),
                         NULL, 0, NI_NAMEREQD))
         /* Resolution de nom impossible */
-        { inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
+        { if (inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr)==NULL)
+          { ERREUR("inet_ntop");
+            return (-1);
+          }else
             printf("Un appel de %s (%d) a ete intercepte.\n", ipstr, ntohs(sa6.sin6_port));
         }
 
         else
             printf("Un appel de %s (%d) a ete intercepte.\n",
-                   hbuf, ntohs(sa6.sin6_port));
-    }
+                   hbuf, ntohs(sa6.sin6_port));}
+    
 
 	printf("La connexion est etablie sous l'identificateur %d.\n", newso);
        
