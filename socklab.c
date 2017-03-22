@@ -211,9 +211,9 @@ int sock_status()
 		ERREUR("select()");
 
 	printf
-	    (" Id  Proto   Adresse                    Connexion               VERSION  RWX ?\n");
+	    (" Id  Proto   Adresse                    Connexion                  TYPE  RWX ?\n");
 	printf
-	    (" ------------------------------------------------------------------------------\n");
+	    (" ---------------------------------------------------------------------------\n");
 
 	for (i = 0; i < nbsock; i++) {
 		printf("%c%-4d", (i == dft_sock ? '>' : ' '), sock[i]);
@@ -344,7 +344,11 @@ int sock_status()
                 return (-1);
             }
 		if (sa.sin_port == 0)
-			printf("%-25c  ", '-');
+        {
+            
+                printf("%-25c  ", '-');
+                lgstradr=0;
+            }
 		else {
 			if (sa.sin_addr.s_addr == INADDR_ANY)
 				sprintf(str, "*(%d)", ntohs(sa.sin_port));
@@ -362,6 +366,9 @@ int sock_status()
 						ntohs(sa.sin_port));
 			}
 			printf("%-25s  ", str);
+            if ((lgstradr=strlen(str)) > 25) // passage à la ligne pour adresse suivante
+                printf("\n");
+
 		}
 
 		lensa = sizeof(struct sockaddr_in);
@@ -377,9 +384,29 @@ int sock_status()
 			else
 				sprintf(str, "%s(%d)", hbuf,
 					ntohs(sa.sin_port));
-			printf("%-25s  ", str);
+            lgstradr2=strlen(str);
+            if (lgstradr < 25) // passage a la ligne non fait
+            { if (lgstradr2 < 25)//affichage normal
+                printf("%-25s  ", str);
+            else //il faut passer à la ligne pour la deuxieme adresse
+                printf("                    %-45s  ", str);
+            }else //passage a la ligne fait
+            {
+                if (lgstradr2 < 25) //  on peut ecrire sur la colonne connexion
+                    printf("                                        %-25s  ", str);
+                else
+                    printf("                    %-45s  ", str);
+            }
+
 		} else if (errno == ENOTCONN)
-			printf("%-25c  ", '-');
+        {
+            if (lgstradr < 25)
+                printf("%-25c  ", '-');
+            else
+                printf("                                        %-25c  ", '-');
+        }
+
+        
 		else
 			//modif Pascal il faut continuer pour les autres sockets, modif du message d'erreur
 		{
