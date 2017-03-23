@@ -27,7 +27,7 @@ Guide de référence
 }
 
 \author{$Revision: 386 $}
-\date{$Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $}
+\date{$Date: 2017-03-21 09:31:07 +0200 (Thu, 21 March 2017) $}
 
 \begin{document}
 
@@ -49,7 +49,7 @@ Guide de référence
 %
 %
 \chapter{Introduction}
-
+ 
 Au sein d'une même machine, les processus disposent d'un certain nombre 
 d'outils pour communiquer entre eux: fichiers, {\em pipes}, signaux, files de messages, etc. mais 
 ces outils ne sont valables qu'à la condition que les processus concernés s'exécutent sur 
@@ -170,7 +170,6 @@ l'interpréteur de commandes:
 \begin{verbatim}
 sparc1 # socklab
 socklab - laboratoire d'etude des sockets INTERNET
-L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
 --------------------------------------------------------------------------
 socklab>
 \end{verbatim}
@@ -183,7 +182,6 @@ Par exemple~:
 \begin{verbatim}
 sparc1 # socklab tcp
 socklab - laboratoire d'etude des sockets INTERNET
-L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
 --------------------------------------------------------------------------
 socklab-TCP>
 \end{verbatim}
@@ -200,7 +198,6 @@ option~:
 \begin{verbatim}
 sparc1 # socklab
 socklab - laboratoire d'etude des sockets INTERNET
-L.CROQ & L.SALTI - ENSIMAG - Juillet 1993
 --------------------------------------------------------------------------
 socklab>
 \end{verbatim}
@@ -259,10 +256,10 @@ le vérifier, exécutez la commande \cmd{status}:
 
 \begin{verbatim}
 socklab> status
- Id      Proto       Adresse            Connexion           RWX ?
+ Id      Proto       Adresse            Connexion      Type   RWX ?
  -----------------------------------------------------------------------
- 3       UDP         -                  -                   .W.
->4       UDP         -                  -                   .W.
+ 3       UDP         -                  -               ipv4  .W.
+>4       UDP         -                  -               ipv4  .W.
  
 socklab>
 \end{verbatim}
@@ -271,7 +268,7 @@ Cette commande permet d'afficher tous les renseignements rattachés aux sockets
 qui ont été créées (la forme abrégée de la commande status est \texttt{=}). Pour chaque 
 socket affichée, \texttt{Id} est sont identificateur, \texttt{Proto} est le type de protocole utilisé, 
 \texttt{Adresse} est l'adresse qui lui a été éventuellement affectée (dans l'exemple précédent, 
-ce n'est pas le cas), \texttt{Connexion} indique si une connexion est établie, et \texttt{RWX} indique 
+ce n'est pas le cas), \texttt{Connexion} indique si une connexion est établie, \texttt{Type} indique le type de la socket (\texttt{ipv4} ou  \texttt{ipv6}) et \texttt{RWX} indique 
 ce qu'il est possible de faire (\texttt{R} = read, \texttt{W} = write, \texttt{X} = eXception,
 cf.~\ref{ref:status}).
 Notez la présence du signe \texttt{>} à gauche de la deuxième socket. Ce signe indique quelle est la 
@@ -322,10 +319,10 @@ socklab> bind 4 * 0
 Le port 1043 a ete affecte a la socket
  
 socklab> =
- Id      Proto       Adresse            Connexion           RWX ?
+ Id      Proto       Adresse            Connexion          Type RWX ?
  -----------------------------------------------------------------------
- 3       UDP         sparc1(5000)       -                   .W.
->4       UDP         *(1043)            -                   .W.
+ 3       UDP         sparc1(5000)       -                  ipv4 .W.
+>4       UDP         *(1043)            -                  ipv4 .W.
 socklab>
 \end{verbatim}
 
@@ -395,10 +392,11 @@ tapez \cmd{help} ou \texttt{?}~:
 socklab> help
 LISTE DES COMMANDES DISPONIBLES:
     s socket            r read              w write           ? help
-    b bind              v recv              d send            = status
-    l listen            f recvfrom          t sendto          q quit
-    a accept            x exit            
-    c connect           <id> select. sock.
+    k socket6          v recv              d send            = status
+    b bind             f recvfrom          t sendto          q quit
+    l listen             						x exit 
+    a accept            		           	
+    c connect           
     k close
     h shutdown
     o options
@@ -498,6 +496,8 @@ chaque socket la commande affiche~:
 	\item le protocole utilisé~: TCP ou UDP~;
 	\item son adresse locale si elle en possède une (avec son numéro de port)~;
 	\item l'adresse de la socket distante si une connexion a été établie~;
+	\item le type de la socket : \texttt{ipv4} ou \texttt{ipv6}~;
+
 	\item les opérations réalisables~:
 		\begin{description}
 		\item[\texttt{R}] (read) lecture de données ou récupération d'une connexion;
@@ -921,6 +921,65 @@ et \texttt{bind . * 0} en mode standard).
 \item[Description~:] identique à \texttt{options} en mode standard.
 \end{description}
 
-\input{Documentation_Socklab.ind}
+\section{Cas particulier des sockets IPV6}
+
+Il est possible de manipuler des sockets \texttt{AF\_INET6} associées donc à des adresses IPV6.
+\subsection{Mode \texttt{standard} }
+En mode \texttt{standard} il faut alors utiliser la commande \texttt{socket6}.
+La manipulation de cette socket se fait ensuite avec les mêmes commandes que les sockets IPV4.
+
+\subsubsection[\texttt{socket6}]{\texttt{k - socket6 [tcp|udp]}}\index{socket6}
+
+\begin{description}
+\item[Description~:] création d'une socket dans le domaine Internet \texttt{AF\_INET6}, de type {\sc stream} ou 
+{\sc datagram}, selon la valeur du paramètre.
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{tcp}] création d'une socket de type {\sc stream} (utilisation du protocole TCP)~;
+	\item[\texttt{udp}] création d'une socket de type {\sc datagram} (utilisation du protocole UDP).
+	\end{description}
+\end{description}
+
+\subsection{Mode  \texttt{udp} }
+En mode \texttt{udp} il faut alors utiliser la commande \texttt{socket6}.
+
+\subsubsection[\texttt{socket6}]{\texttt{N - socket6}}\index{socket6}
+
+\begin{description}
+\item[Description~:] création d'une socket IPV6 UDP. L'adresse \texttt{::} lui est automatiquement 
+affectée, et un numéro port libre est choisi par le système (équivalent à \texttt{socket6 udp}
+et \texttt{bind . * 0} en mode standard).
+\end{description}
+
+\subsection{Mode \texttt{tcp}}
+En mode \texttt{tcp}, on peut utiliser les commandes \texttt{passive6} et \texttt{connect6}. Les autres commandes sont les mêmes qu'en IPV4.
+
+\subsubsection[\texttt{passive6}]{\texttt{V - passive6}}\index{passive6}
+
+\begin{description}
+\item[Description~:] création d'une socket passive IPV6, prête à recevoir des demandes de connexion. 
+L'adresse \texttt{::} lui est automatiquement affectée, et un numéro port 
+libre est choisi par le système (équivalent à \texttt{socket6 tcp}, \texttt{bind . * 0} et
+\texttt{listen . 5} en mode standard).
+\end{description}
+
+\subsubsection[\texttt{connect6}]{\texttt{E - connect6 {\em <host> <port>}}}\index{connect6}
+
+\begin{description}
+\item[Description~:] création d'une socket active IPV6 et puis tentative de connexion sur une socket 
+distante. L'adresse \texttt{::} lui est automatiquement affectée, et un 
+numéro port libre est choisi par le système (équivalent à \texttt{socket6 tcp}, \texttt{bind . * 0},
+\texttt{connect . {\em <host> <port>}} en mode standard).
+
+\item[Paramètre~:]~
+	\begin{description}
+	\item[\texttt{\em <host>}] nom ou adresse de la machine distante~;
+	\item[\texttt{\em <port>}] numéro de port de la socket sur la machine distante.
+	\end{description}
+\end{description}
+
+
+%\input{Documentation_Socklab.ind}
 
 \end{document}
