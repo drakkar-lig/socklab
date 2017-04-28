@@ -30,7 +30,7 @@ int terminaison();
 
 t_cmd cmds_STD[] = {
     {"socket",     0, 's', socket_call,    "[tcp|udp]"},
-    {"socket6",    0, 'k', socket6_call,   "[tcp|udp]"},
+    {"socket6",    0, 'n', socket6_call,   "[tcp|udp]"},
     {"bind",       0, 'b', bind_call,      "[id] [host] [port]"},
     {"listen",     0, 'l', listen_call,    "[id] [nb]"},
     {"accept",     0, 'a', accept_call,    "[id] "},
@@ -80,7 +80,7 @@ t_cmd cmds_UDP[] = {
 
 t_cmd cmds_TCP[] = {
     {"passive",    0, 'p', TCP_passive,    ""},
-    {"passive6",   0, 'v', TCP_passive6,   ""},
+    {"passive6",   0, 'n', TCP_passive6,   ""},
     {"accept",     0, 'a', accept_call,    "[id]"},
     {"connect",    0, 'c', TCP_connect,    "[host] [port]"},
     {"connect6",   0, 'e', TCP_connect6,   "[host] [port]"},
