@@ -8,8 +8,6 @@
 
 #include "socklab.h"
 
-char *versionUdp = "udp.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $\n";
-
 /* Creation d'une socket udp en ipv4
  *=======================================================================
  *

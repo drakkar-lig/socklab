@@ -8,7 +8,6 @@
 
 #ifndef	_PRIM_H_
 #define	_PRIM_H_
-char *versionPrim;
 
 int socket_call();
 int socket6_call();

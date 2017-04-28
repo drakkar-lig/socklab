@@ -12,7 +12,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-char versionSock[] = "socklab.c $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
+char socklab_version[] = "0.9";
 
 int sock[MAXSOCK];              /* table des sockets gerees */
 int nbsock;                     /* nb de sockets gerees */
@@ -750,10 +750,7 @@ void usage()
 
 void print_version()
 {
-    printf("%s\n", versionSock);
-    printf("%s\n", versionPrim);
-    printf("%s\n", versionTcp);
-    printf("%s\n", versionUdp);
+    printf("%s\n", socklab_version);
 }
 
 /* Replace \[ and \] by readline ignore delimiters (bash-like)

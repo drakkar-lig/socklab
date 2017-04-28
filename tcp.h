@@ -8,7 +8,6 @@
 
 #ifndef	_TCP_H_
 #define	_TCP_H_
-char *versionTcp;
 int TCP_passive();
 int TCP_connect();
 int TCP_passive6();

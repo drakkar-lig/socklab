@@ -9,8 +9,6 @@
 #include "socklab.h"
 #include <stdlib.h>
 
-char *versionPrim = "prim.c : $Revision: 386 $ du $Date: 2017-03-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
-
 /* Toutes les primitives n'ont que deux parametres: argc et argv qui ont le
  * meme sens que pour main(). Ici, ils s'appliquent aux arguments qui figuraient
  * sur la ligne de commandes saisie par l'utilisateur.

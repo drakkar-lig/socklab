@@ -8,8 +8,6 @@
 
 #include "socklab.h"
 
-char *versionTcp = "tcp.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
-
 /* Creation d'une socket passive en ipv4
  *=======================================================================
  *

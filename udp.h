@@ -8,7 +8,6 @@
 
 #ifndef	_UDP_H_
 #define _UDP_H_
-char *versionUdp;
 
 int UDP_socket();
 int UDP_socket6();
