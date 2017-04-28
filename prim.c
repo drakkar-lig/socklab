@@ -755,10 +755,10 @@ char *argv[];
     /* AF_INET; */
     if (ip == 4) {
         sa = (struct sockaddr *)&sa4;
-	lensa = sizeof(struct sockaddr_in);
+        lensa = sizeof(struct sockaddr_in);
     } else {
         sa = (struct sockaddr *)&sa6;
-	lensa = sizeof(struct sockaddr_in6);
+        lensa = sizeof(struct sockaddr_in6);
     }
     /* lecture */
     lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek, sa, &lensa);
