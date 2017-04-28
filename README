@@ -9,7 +9,7 @@ Contributions successives L. Bellissard, M. Heusse, F. Rousseau, entre autres
 Aucun système de compilation sophistiqué n'est utilisé, il faut parfois aller
 modifier certains fichiers en fonction de la plateforme.
 
-Le code a été formaté avec GNU indent au style Linux avec les options
+Le code a été formaté avec GNU indent proche du style Linux, avec les options :
 -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 
--cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs -nprs -npsl -sai
--saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1
+-cli0 -d0 -di1 -nfc1 -i4 -ip0 -l150 -lp -npcs -nprs -npsl -sai
+-saf -saw -ncs -nsc -sob -nfca -cp33 -ss -nut -il1
