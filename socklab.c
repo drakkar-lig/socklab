@@ -657,6 +657,54 @@ char *argv[];			/* Commande + parametres */
 	}
 }
 
+/* Support de la completion
+ *=================================================================
+ *
+ */
+char *socklab_command_generator(const char *text, int state)
+{
+	static int list_index, len;
+	char letter;
+	char *name;
+
+	/* If this is a new word to complete, initialize now.  This includes
+	   saving the length of TEXT for efficiency, and initializing the index
+	   variable to 0. */
+	if (!state) {
+		list_index = 0;
+		len = strlen(text);
+	}
+
+	/* Return the next name which partially matches from the command list. */
+	for (; cmds[list_index].name[0] != 0; list_index++) {
+		name = cmds[list_index].name;
+		letter = cmds[list_index].letter;
+		/* If the user entered a single letter, try to autocomplete according
+		   to the shortcut. */
+		if (strncmp(name, text, len) == 0 || (len == 1 && letter == text[0])) {
+			list_index++;
+			return strdup(name);
+		}
+	}
+
+	/* If no names matched, then return NULL. */
+	return (char *)NULL;
+}
+
+char **socklab_completion(const char *text, int start, int end)
+{
+	char **matches = NULL;
+
+	/* Don't let readline complete arguments as filenames. */
+	rl_attempted_completion_over = 1;
+
+	/* Only complete the first word of a line (command name) */
+	if (start == 0)
+		matches = rl_completion_matches(text, socklab_command_generator);
+
+	return matches;
+}
+
 /* Interface Homme-Machine
  *=================================================================
  *
@@ -682,7 +730,7 @@ void ihm()
 		break;
 	}
 
-	rl_bind_key('\t', rl_insert);
+	rl_attempted_completion_function = socklab_completion;
 
 	for (;;) {
 		cmd = readline(cmd_prompt);
