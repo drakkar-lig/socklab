@@ -142,7 +142,7 @@ struct sockaddr *addr;
 int version;
 
 {
-    get_itf_host(name, addr, version, "Host ?: ");
+    get_itf_host(name, addr, version, "Host?");
 }
 
 void get_itf(name, addr, version)
@@ -151,7 +151,7 @@ struct sockaddr *addr;
 int version;
 
 {
-    get_itf_host(name, addr, version, "Adresse de l'interface ?: ");
+    get_itf_host(name, addr, version, "Interface address?");
 }
 
 void get_itf_host(name, addr, version, prompt)
@@ -177,7 +177,7 @@ char prompt[];
                 return;
 
         }
-        printf("%s", prompt);
+        printf("%s : ", prompt);
 /*		printf("Host (\"*\"=INADDR_ANY, \".\"=<local host>) ?: ");*/
         rl_gets(str, sizeof(str));
     }
@@ -202,7 +202,7 @@ u_long *addr;
         if (*addr != INADDR_NONE)
             return;
 
-        printf("Adresse de groupe ?: ");
+        printf("Group address? : ");
         rl_gets(str, sizeof(str));
     }
 }
@@ -222,7 +222,7 @@ int *port;
         if (strcmp(str, "") && port_number(str, port) == 0)
             return;
 
-        printf("Port ?: ");
+        printf("Port? : ");
         rl_gets(str, sizeof(str));
     }
 
@@ -257,7 +257,7 @@ int *size;
                 return;
             }
         }
-        printf("Message ?: ");
+        printf("Message? : ");
         rl_gets(*msg, *size);
     }
 }
@@ -289,7 +289,7 @@ int *nb;
         else if (sscanf(str, "%d", nb) == 1)
             return;
 
-        printf("%s (%d) ?: ", prompt, defval);
+        printf("%s [%d] : ", prompt, defval);
 
         rl_gets(str, sizeof(str));
     }
@@ -322,7 +322,7 @@ int *choice;
         printf("%s [", prompt);
         for (i = 0; i < nb - 1; i++)
             printf("%s/", list[i].name);
-        printf("%s] ?: ", list[nb - 1].name);
+        printf("%s] : ", list[nb - 1].name);
         rl_gets(str, sizeof(str));
     }
 }
@@ -340,19 +340,17 @@ int *var;
 
     *var = (*var ? 1 : 0);
     for (;;) {
-        printf("%s (%c) ?: ", prompt, (*var ? 'Y' : 'N'));
+        printf("%s [%s] : ", prompt, (*var ? "Y/n" : "y/N"));
         rl_gets(str, sizeof(str));
         switch (my_toupper(str[0])) {
         case 0:
             return;
         case 'Y':
+        case 'O':
             *var = 1;
             return;
         case 'N':
             *var = 0;
-            return;
-        case 'O':
-            *var = 1;
             return;
         }
     }
@@ -441,8 +439,8 @@ struct sockaddr *addr;
 
     // Conversion de l'adresse IP en une chaîne de caractères
     inet_ntop(addr->sa_family, p, ipstr, sizeof ipstr);
-    printf(" Adresse IPv%c: %s\n", ipver, ipstr);
-    printf("Port:    %d\n", port);
+    printf("IPv%c address: %s\n", ipver, ipstr);
+    printf("Port:         %d\n", port);
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
     if (getnameinfo(addr, sizeof(addr), hbuf, sizeof(hbuf), sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0)

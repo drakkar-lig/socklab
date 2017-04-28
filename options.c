@@ -72,7 +72,7 @@ char *argv[];
             }
 
             if (nb == 0)
-                printf("*** option %s inconnue\n", argv[i]);
+                printf("*** unknown option %s\n", argv[i]);
         }
 
         return (0);

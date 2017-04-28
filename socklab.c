@@ -37,7 +37,7 @@ t_cmd cmds_STD[] = {
     {"connect",    0, 'c', connect_call,   "[id] [host] [port]"},
     {"close",      0, 'k', close_call,     "[id] "},
     {"shutdown",   0, 'h', shutdown_call,  "[id] [in|out|both]"},
-    {"options",    0, 'o', socket_options, "[id] [nom]..."},
+    {"options",    0, 'o', socket_options, "[id] [name]..."},
     {"read",       1, 'r', read_call,      "[id] [nb]"},
     {"recv",       1, 'v', recv_call,      "[id] [nb] [-oob] [-peek]"},
     {"recvfrom",   1, 'f', recvfrom_call,  "[id] [nb] [-oob] [-peek]"},
@@ -60,7 +60,7 @@ t_cmd cmds_UDP[] = {
     {"socket6",    0, 'n', UDP_socket6,    ""},
     {"msocket",    0, 'c', msocket_call,   ""},
     {"close",      0, 'k', close_call,     "[id]"},
-    {"options",    0, 'o', socket_options, "[id] [nom]..."},
+    {"options",    0, 'o', socket_options, "[id] [name]..."},
     {"mjoin",      0, 'j', mjoin_call,     "[id] [group] [local]"},
     {"mleave",     0, 'l', mleave_call,    "[id] [group] [local]"},
     {"mbind",      0, 'b', mbind_call,     "[id] [port]"},
@@ -86,7 +86,7 @@ t_cmd cmds_TCP[] = {
     {"connect6",   0, 'e', TCP_connect6,   "[host] [port]"},
     {"close",      0, 'k', close_call,     "[id]"},
     {"shutdown",   0, 'h', shutdown_call,  "[id] [in|out|both]"},
-    {"options",    0, 'o', socket_options, "[id] [nom]..."},
+    {"options",    0, 'o', socket_options, "[id] [name]..."},
     {"read",       1, 'r', read_call,      "[id] [nb]"},
     {"urecv",      1, 'v', TCP_urecv,      "[id] [nb]"},
     {"write",      2, 'w', write_call,     "[id] [mesg]"},
@@ -108,7 +108,7 @@ void SIGIO_handler(sig)
 int sig;
 {
     signal(SIGIO, SIGIO_handler);
-    printf("\n\7*** une socket vient de recevoir des donnees" " ou une demande de connexion\n");
+    printf("\n\7*** a socket just received data or a new connection attempt\n");
 }
 
 /* handler du signal SIGPIPE
@@ -122,7 +122,7 @@ void SIGPIPE_handler(sig)
 int sig;
 {
     signal(SIGPIPE, SIGPIPE_handler);
-    printf("\n\7*** le signal SIGPIPE a ete intercepte\n");
+    printf("\n\7*** the SIGPIPE signal has just been caught\n");
 }
 
 /* handler du signal SIGINT
@@ -142,7 +142,7 @@ void SIGURG_handler(sig)
 int sig;
 {
     signal(SIGURG, SIGURG_handler);
-    printf("Reception d'un signal SIGURG\n");
+    printf("SIGURG signal received\n");
 }
 
 /* retour au shell
@@ -151,7 +151,7 @@ int sig;
 
 int terminaison()
 {
-    if (ask("Confirmez-vous le retour au shell") == 0)
+    if (ask("Do you really want to exit socklab?") == 0)
         return (0);
     else
         exit(0);
@@ -186,7 +186,7 @@ int sock_status()
     int ip, lgstradr = 0, lgstradr2 = 0;
 
     if (nbsock == 0) {
-        printf("Aucune socket creee.\n");
+        printf("No socket has been created yet.\n");
         return (0);
     }
 
@@ -207,7 +207,7 @@ int sock_status()
     if (select(maxfdpl, &readfds, &writefds, &exceptfds, &timeout) == -1)
         ERREUR("select()");
 
-    printf(" Id  Proto   Adresse                    Connexion                  TYPE  RWX ?\n");
+    printf(" Id  Proto   Local address              Remote address             TYPE  RWX ?\n");
     printf(" ---------------------------------------------------------------------------\n");
 
     for (i = 0; i < nbsock; i++) {
@@ -312,7 +312,7 @@ int sock_status()
             else
                 //modif Pascal il faut continuer pour les autres sockets, modif du message d'erreur
             {
-                printf("%-25s  ", "-erreur deconnecte");
+                printf("%-25s  ", "-error: disconnected");
                 //ERREUR ("getpeername()");
                 //return (-1);
             }
@@ -384,7 +384,7 @@ int sock_status()
             else
                 //modif Pascal il faut continuer pour les autres sockets, modif du message d'erreur
             {
-                printf("%-25s  ", "-erreur deconnecte");
+                printf("%-25s  ", "-error: disconnected");
                 //ERREUR ("getpeername()");
                 //return (-1);
             }
@@ -423,18 +423,18 @@ char *argv[];
 
             switch (i) {
             case CMD_NOTFOUND:
-                printf(": commande incorrecte\n");
+                printf(": invalid command\n");
                 break;
 
             case CMD_AMBIGUOUS:
-                printf(": commande ambigue\n");
+                printf(": ambiguous command\n");
                 break;
 
             case CMD_NULL:
                 break;
 
             case CMD_BADQUOTE:
-                printf(": guillemet non ferme\n");
+                printf(": invalid quoting\n");
                 break;
 
             default:
@@ -452,7 +452,7 @@ char *argv[];
             ind[++i] = nb;
         }
     }
-    printf("LISTE DES COMMANDES DISPONIBLES:\n");
+    printf("AVAILABLE COMMANDS:\n");
     nb++;
     select_cmd = 0;
 
@@ -714,18 +714,18 @@ void ihm()
         choix = check_cmd(cmd, &cmd_argc, cmd_argv);
         switch (choix) {
         case CMD_NOTFOUND:
-            printf("*** commande incorrecte\n\n");
+            printf("*** invalid command\n\n");
             break;
 
         case CMD_AMBIGUOUS:
-            printf("*** commande ambigue\n\n");
+            printf("*** ambiguous command\n\n");
             break;
 
         case CMD_NULL:
             break;
 
         case CMD_BADQUOTE:
-            printf("*** guillemet non ferme\n\n");
+            printf("*** invalid quoting\n\n");
             break;
 
         default:

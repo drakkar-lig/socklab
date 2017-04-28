@@ -33,7 +33,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket UDP creee: Id=%d, port=%d\n", sock[so], port);
+    printf("UDP socket created: Id=%d, port=%d\n", sock[so], port);
     return (0);
 }
 
@@ -62,7 +62,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket (IPV6) UDP creee: Id=%d, port=%d\n", sock[so], port);
+    printf("UDP socket created: Id=%d, port=%d\n", sock[so], port);
     return (0);
 }
 

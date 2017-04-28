@@ -39,7 +39,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
+    printf("TCP socket created: id=%d, port=%d\n", sock[so], port);
     return (0);
 }
 
@@ -74,7 +74,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket (IPV6) TCP creee: id=%d, port=%d\n", sock[so], port);
+    printf("TCP socket created for IPv6: id=%d, port=%d\n", sock[so], port);
     return (0);
 }
 
@@ -98,7 +98,7 @@ char *argv[];
     struct sockaddr_in addr;
 
     if (nbsock == MAXSOCK) {
-        printf("La table interne des sockets est pleine.\n");
+        printf("Too much sockets already in use.\n");
         return (-1);
     }
     /* host ? */
@@ -129,7 +129,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
+    printf("TCP socket created: id=%d, port=%d\n", sock[so], port);
 
     /* connexion */
     if (connect_call(4, connect_argv) == -1) {
@@ -160,7 +160,7 @@ char *argv[];
     struct sockaddr_in6 addr;
 
     if (nbsock == MAXSOCK) {
-        printf("La table interne des sockets est pleine.\n");
+        printf("Too much sockets already in use.\n");
         return (-1);
     }
     /* host ? */
@@ -191,7 +191,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Socket(IPv6) TCP creee: id=%d, port=%d\n", sock[so], port);
+    printf("TCP socket created for IPv6: id=%d, port=%d\n", sock[so], port);
 
     /* connexion */
     if (connect_call(4, connect_argv) == -1) {

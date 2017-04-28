@@ -27,14 +27,14 @@ char *argv[];
     int proto;
     static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
     if (nbsock == MAXSOCK) {
-        printf("La table interne des sockets est pleine.\n");
+        printf("Too much sockets already in use.\n");
         return (-1);
     }
 
     if (argc > 1)
-        get_choice("Protocole", list, 2, argv[1], &proto);
+        get_choice("Protocol?", list, 2, argv[1], &proto);
     else
-        get_choice("Protocole", list, 2, "", &proto);
+        get_choice("Protocol?", list, 2, "", &proto);
 
     /* creation de la socket */
     s = socket(AF_INET, proto, 0);
@@ -53,7 +53,7 @@ char *argv[];
     }
 
     if (DFT_MODE)
-        printf("La socket est identifiee par l'identificateur %d\n", s);
+        printf("The socket identifier is %d\n", s);
 
     /* modification de la table */
     sock[nbsock] = s;
@@ -73,14 +73,14 @@ char *argv[];
     int proto;
     static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
     if (nbsock == MAXSOCK) {
-        printf("La table interne des sockets est pleine.\n");
+        printf("Too much sockets already in use.\n");
         return (-1);
     }
 
     if (argc > 1)
-        get_choice("Protocole", list, 2, argv[1], &proto);
+        get_choice("Protocol?", list, 2, argv[1], &proto);
     else
-        get_choice("Protocole", list, 2, "", &proto);
+        get_choice("Protocol?", list, 2, "", &proto);
 
     /* creation de la socket */
     s = socket(AF_INET6, proto, 0);
@@ -106,7 +106,7 @@ char *argv[];
     }
 
     if (DFT_MODE)
-        printf("La socket IPV6 est identifiee par l'identificateur %d\n", s);
+        printf("The IPv6 socket identifier is %d\n", s);
 
     /* modification de la table */
     sock[nbsock] = s;
@@ -168,7 +168,7 @@ char *argv[];
                          (((struct sockaddr_in *)&addr)->sin_port));
 
             if (DFT_MODE)
-                printf("Le port %d a ete affecte a la socket\n", port);
+                printf("The socket was attributed port %d.\n", port);
 
         }
     } else {                    /*IPV6 */
@@ -192,7 +192,7 @@ char *argv[];
             port = ntohs(addr.sin6_port);       /* Modif P. Sicard */
 
             if (DFT_MODE)
-                printf("Le port %d a ete affecte a la socket\n", port); /* Modif P. Sicard */
+                printf("The socket was attributed port %d.\n", port);
         }
     }
     return (port);
@@ -219,9 +219,9 @@ char *argv[];
     /* backlog ? */
     nb = 5;
     if (argc > 2)
-        get_nb("Nb de requetes", argv[2], &nb);
+        get_nb("Nb of requests", argv[2], &nb);
     else
-        get_nb("Nb de requetes", "", &nb);
+        get_nb("Nb of requests", "", &nb);
 
     /* mise en ecoute */
     if (listen(sock[so], nb) < 0) {
@@ -252,7 +252,7 @@ char *argv[];
     char hbuf[NI_MAXHOST];
 
     if (nbsock == MAXSOCK) {
-        printf("La table interne des sockets est pleine.\n");
+        printf("Too much sockets already in use.\n");
         return (-1);
     }
 
@@ -281,9 +281,9 @@ char *argv[];
             /* Resolution de nom impossible */
         {
             inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
-            printf("Un appel de %s (%d) a ete intercepte.\n", ipstr, ntohs(sa.sin_port));
+            printf("A connection from %s (%d) was received.\n", ipstr, ntohs(sa.sin_port));
         } else
-            printf("Un appel de %s (%d) a ete intercepte.\n", hbuf, ntohs(sa.sin_port));
+            printf("A connection from %s (%d) was received.\n", hbuf, ntohs(sa.sin_port));
     } else                      // IPV6
     {
         /* Resolution de nom impossible */
@@ -292,14 +292,12 @@ char *argv[];
                 ERREUR("inet_ntop");
                 return (-1);
             } else
-                printf("Un appel de %s (%d) a ete intercepte.\n", ipstr, ntohs(sa6.sin6_port));
-        }
-
-        else
-            printf("Un appel de %s (%d) a ete intercepte.\n", hbuf, ntohs(sa6.sin6_port));
+                printf("A connection from %s (%d) was received.\n", ipstr, ntohs(sa6.sin6_port));
+        } else
+            printf("A connection from %s (%d) was received.\n", hbuf, ntohs(sa6.sin6_port));
     }
 
-    printf("La connexion est etablie sous l'identificateur %d.\n", newso);
+    printf("Connection is established, with socket ID %d.\n", newso);
 
     /* modification de la table */
     sock[nbsock] = newso;
@@ -357,7 +355,7 @@ char *argv[];
         return (-1);
     }
 
-    printf("Connexion etablie.\n");
+    printf("Connection established.\n");
 
     /* mise a jour de la table */
     return (0);
@@ -419,9 +417,9 @@ char *argv[];
 
     /* sens ? */
     if (argc > 2)
-        get_choice("Sens", list, 3, argv[2], &sens);
+        get_choice("Direction?", list, 3, argv[2], &sens);
     else
-        get_choice("Sens", list, 3, "", &sens);
+        get_choice("Direction?", list, 3, "", &sens);
 
     /* fermeture de la socket */
     if (shutdown(sock[so], sens) == -1) {
@@ -470,7 +468,7 @@ char *argv[];
     }
 
     free(msg);
-    printf("%d octet(s) envoye(s)\n", nb);
+    printf("Sent %d bytes\n", nb);
 
     return (0);
 }
@@ -523,9 +521,9 @@ char *argv[];
         nb = send(sock[so], msg, strlen(msg), MSG_OOB * oob | MSG_DONTROUTE * dontroute);
         if (nb >= 0)
             if (loop)
-                printf("%d octet(s) envoye(s) (total %d)\n", nb, total += nb);
+                printf("Sent %d bytes (total %d)\n", nb, total += nb);
             else
-                printf("%d octet(s) envoye(s)\n", nb);
+                printf("Sent %d bytes\n", nb);
         else {
             ERREUR("send()");
             return (-1);
@@ -609,9 +607,9 @@ char *argv[];
         nb = sendto(sock[so], msg, (unsigned int)strlen(msg), MSG_OOB * oob | MSG_DONTROUTE * dontroute, (struct sockaddr *)&addr, size);
         if (nb >= 0)
             if (loop)
-                printf("%d octet(s) envoye(s) (total %d)\n", nb, total += nb);
+                printf("Sent %d bytes (total %d)\n", nb, total += nb);
             else
-                printf("%d octet(s) envoye(s)\n", nb);
+                printf("Sent %d bytes\n", nb);
         else {
             ERREUR("sendto()");
             return (-1);
@@ -645,9 +643,9 @@ char *argv[];
     /* combien ? */
     nb = 100;
     if (argc > 2)
-        get_nb("Nb d'octets a lire", argv[2], &nb);
+        get_nb("Nb of bytes to read", argv[2], &nb);
     else
-        get_nb("Nb d'octets a lire", "", &nb);
+        get_nb("Nb of bytes to read", "", &nb);
 
     msg = (char *)malloc((nb + 1) * sizeof(char));
 
@@ -659,7 +657,7 @@ char *argv[];
     }
 
     msg[lus] = (char)0;
-    printf("%d octet(s) lu(s): message=<%s>\n", lus, msg);
+    printf("Read %d bytes: message=<%s>\n", lus, msg);
     free(msg);
     return (0);
 }
@@ -699,9 +697,9 @@ char *argv[];
         nb = 1;                 // Un seul octet transmis en urgent...
     else {
         if (argc > 2)
-            get_nb("Nb d'octets a lire", argv[2], &nb);
+            get_nb("Nb of bytes to read", argv[2], &nb);
         else
-            get_nb("Nb d'octets a lire", "", &nb);
+            get_nb("Nb of bytes to read", "", &nb);
     }
     /* lecture des donnees */
     lus = recv(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek);
@@ -711,7 +709,7 @@ char *argv[];
     }
 
     msg[lus] = (char)0;
-    printf("%d octet(s) lu(s): message=<%s>\n", lus, msg);
+    printf("Read %d bytes: message=<%s>\n", lus, msg);
 
     return (0);
 }
@@ -759,9 +757,9 @@ char *argv[];
         nb = 1;                 // Un seul octet transmis en urgent...
     else {
         if (argc > 2)
-            get_nb("Nb d'octets a lire", argv[2], &nb);
+            get_nb("Nb of bytes to read", argv[2], &nb);
         else
-            get_nb("Nb d'octets a lire", "", &nb);
+            get_nb("Nb of bytes to read", "", &nb);
     }
     msg = (char *)malloc((nb + 1) * sizeof(char));
 
@@ -787,17 +785,17 @@ char *argv[];
         /* Resolution de nom impossible */
         if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
             inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
-            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
+            printf("A message of length %d bytes was received from %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
         } else
-            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
+            printf("A message of length %d bytes was received from %s (%d).\n", lus, hbuf, ntohs(sa.sin_port));
     } else {
         // IPV6
         /* Resolution de nom impossible */
         if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
             inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
-            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
+            printf("A message of length %d bytes was received from %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
         } else
-            printf("Un message de %d octet(s) a ete recu de %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
+            printf("A message of length %d bytes was received from %s (%d).\n", lus, hbuf, ntohs(sa6.sin6_port));
     }
     msg[lus] = (char)0;
     printf("Message=<%s>\n", msg);
@@ -826,12 +824,12 @@ char *argv[];
     if (so == -1)
         return (-1);
 
-    printf("Socket UDP creee: Id=%d\n", sock[so]);
+    printf("UDP socket created: Id=%d\n", sock[so]);
     /*Modif P. Sicard modification du TTL car par defaut=1 */
     {
         u_char ttl = TTL_MCAST;
         if (setsockopt(sock[so], IPPROTO_IP, IP_MULTICAST_TTL, (char *)&ttl, sizeof(ttl)) == -1)
-            ERREUR("Attention ttl par defaut  a 1\n");
+            ERREUR("Warning: default TTL is 1\n");
     }
     return (0);
 }
@@ -918,9 +916,9 @@ char *argv[];
 
     /* Realisation du "setsockopt" */
     if (setsockopt(sock[so], IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&imr, sizeof(struct ip_mreq)) == -1)
-        ERREUR("Impossible de joindre le groupe");
+        ERREUR("Unable to join group");
     else
-        printf("OK : adhesion au groupe %s effectuee...\n", inet_ntoa(imr.imr_multiaddr));
+        printf("Done joining group %s.\n", inet_ntoa(imr.imr_multiaddr));
 
     return (0);
 
@@ -964,9 +962,9 @@ char *argv[];
 
     /* Realisation du "setsockopt" */
     if (setsockopt(sock[so], IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&imr, sizeof(struct ip_mreq)) == -1)
-        ERREUR("Impossible de quitter le groupe");
+        ERREUR("Unable to leave group");
     else
-        printf("OK : groupe %s quitte...\n", inet_ntoa(imr.imr_multiaddr));
+        printf("Done leaving group %s.\n", inet_ntoa(imr.imr_multiaddr));
 
     return (0);
 
@@ -1032,7 +1030,7 @@ char *argv[];
     else
         get_port("", &port);
 
-    /* Initialisation de l'adresse destination*/
+    /* Initialisation de l'adresse destination */
     memset((char *)&sa, 0, sizeof(struct sockaddr_in));
 
     sa.sin_family = AF_INET;
@@ -1053,9 +1051,9 @@ char *argv[];
         nb = sendto(sock[so], msg, (unsigned int)strlen(msg), 0, (struct sockaddr *)&sa, sizeof(sa));
         if (nb >= 0)
             if (loop)
-                printf("%d octet(s) envoye(s) (total %d)\n", nb, total += nb);
+                printf("Sent %d bytes (total %d)\n", nb, total += nb);
             else
-                printf("%d octet(s) envoye(s)\n", nb);
+                printf("Sent %d bytes\n", nb);
         else {
             ERREUR("sendto()");
             return (-1);
@@ -1091,15 +1089,15 @@ char *argv[];
         get_id_sock("", &so);
 
     if (argc > 2)
-        get_nb("Nombre de messages a recevoir", argv[2], &count);
+        get_nb("Nb of messages to receive", argv[2], &count);
     else
-        get_nb("Nombre de messages a recevoir", "", &count);
+        get_nb("Nb of messages to receive", "", &count);
 
     gettimeofday(&start, NULL);
 
     while (count-- > 0) {
         char buf[BUFSIZ];
-        printf("En attente d'arrivee de messages...\n");
+        printf("Waiting for incoming messages...\n");
         fromlen = sizeof(from);
         read = recvfrom(sock[so], buf, sizeof(buf), 0, (struct sockaddr *)&from, &fromlen);
         if (read < 0) {
@@ -1107,8 +1105,8 @@ char *argv[];
             return (-1);
         }
         buf[read] = '\0';
-        printf("Un message de %d octet(s) a ete recu.\n", read);
-        printf("Message recu : %s\n", buf);
+        printf("Received a message of length %d bytes.\n", read);
+        printf("Message received: %s\n", buf);
         strlcpy(buf, "", sizeof(buf));
 
         fflush(NULL);
@@ -1116,7 +1114,7 @@ char *argv[];
 
     gettimeofday(&stop, NULL);
     if (fromlen) {
-        printf("Recu de %s en %ld secondes\n", inet_ntoa(from.sin_addr), stop.tv_sec - start.tv_sec);
+        printf("Received from %s in %ld seconds\n", inet_ntoa(from.sin_addr), stop.tv_sec - start.tv_sec);
     }
     return (0);
 }
