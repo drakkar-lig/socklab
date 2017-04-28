@@ -95,7 +95,7 @@ char *argv[];
     /* force IPV6, socket ne peut recevoir que des paquets IPV6 */
      int only=1;
 
-        if (setsockopt(s, IPPROTO_IPV6, IPV6_BINDV6ONLY,
+        if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY,
                &only, sizeof only) < 0) {
         ERREUR("setsockopt not IPv6 only");
             return (-1);}

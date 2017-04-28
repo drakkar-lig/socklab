@@ -482,7 +482,7 @@ int socket;
 {
     int only = 0;
     socklen_t size;
-    if (getsockopt(socket, IPPROTO_IPV6, IPV6_BINDV6ONLY,
+    if (getsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY,
                    &only, &size) < 0)
         return (4); /* IPV4 a priori */
 
