@@ -452,7 +452,7 @@ struct sockaddr *addr;
     printf("Port:    %d\n", port);
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     
-    if (getnameinfo(addr, addr->sa_len, hbuf, sizeof(hbuf), sbuf,
+    if (getnameinfo(addr, sizeof(addr), hbuf, sizeof(hbuf), sbuf,
                     sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0)
         printf("Host Name=%s, Service Name =%s", hbuf, sbuf);
 
