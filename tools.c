@@ -449,14 +449,14 @@ struct sockaddr *addr;
     // Conversion de l'adresse IP en une chaîne de caractères
     inet_ntop(addr->sa_family, p, ipstr, sizeof ipstr);
     printf(" Adresse IPv%c: %s\n", ipver, ipstr);
-        printf("Port:    %d\n", port);
-   	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+    printf("Port:    %d\n", port);
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     
     if (getnameinfo(addr, addr->sa_len, hbuf, sizeof(hbuf), sbuf,
                     sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0)
         printf("Host Name=%s, Service Name =%s", hbuf, sbuf);
 
-	printf("\n");
+    printf("\n");
 }
 
 /* affichage d'un code d'erreur

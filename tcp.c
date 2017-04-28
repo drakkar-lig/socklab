@@ -171,24 +171,24 @@ char *argv[];
     /* host ? */
     if (argc > 1)
         get_host(argv[1], (struct sockaddr *)&addr, 6);
-        else
-            get_host("", (struct sockaddr *)&addr, 6);
-            
-            inet_ntop(addr.sin6_family, &(addr.sin6_addr), c_host, sizeof(c_host));
-            
-        /* port ? */
-            if (argc > 2)
-                get_port(argv[2], &port);
-                else
-                    get_port("", &port);
-                    
-                    sprintf(c_port, "%d", port);
-                    
-                /* creation de la socket */
-                    so = socket6_call(2, socket_argv);
-                    if (so == -1)
-                        return (-1);
-    
+    else
+      get_host("", (struct sockaddr *)&addr, 6);
+
+    inet_ntop(addr.sin6_family, &(addr.sin6_addr), c_host, sizeof(c_host));
+
+    /* port ? */
+    if (argc > 2)
+      get_port(argv[2], &port);
+    else
+      get_port("", &port);
+
+    sprintf(c_port, "%d", port);
+
+    /* creation de la socket */
+    so = socket6_call(2, socket_argv);
+    if (so == -1)
+      return (-1);
+
     /* affectation d'une adresse */
     port = bind_call(4, bind_argv);
     if (port == -1) {
