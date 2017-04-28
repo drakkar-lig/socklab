@@ -241,15 +241,16 @@ int accept_call(argc, argv)
 int argc;
 char *argv[];
 {
-    struct sockaddr_in sa;
+    struct sockaddr_in sa4;
     struct sockaddr_in6 sa6;
+    struct sockaddr *sa;
     int ip;
-    char ipstr[INET6_ADDRSTRLEN];
 
     socklen_t lensa;
     int newso;
     int so;
     char hbuf[NI_MAXHOST];
+    char pbuf[NI_MAXSERV];
 
     if (nbsock == MAXSOCK) {
         printf("Too much sockets already in use.\n");
@@ -264,37 +265,23 @@ char *argv[];
 
     ip = domainesock(sock[so]); /*domaine de la socket 4 ou 6 */
     if (ip == 4) {              /* AF_INET; */
+        sa = (struct sockaddr *)&sa4;
         lensa = sizeof(struct sockaddr_in);
-        newso = accept(sock[so], (struct sockaddr *)&sa, &lensa);
     } else {
+        sa = (struct sockaddr *)&sa6;
         lensa = sizeof(struct sockaddr_in6);
-        newso = accept(sock[so], (struct sockaddr *)&sa6, &lensa);
     }
+    newso = accept(sock[so], sa, &lensa);
     if (newso < 0) {
         ERREUR("accept()");
         return (-1);
     }
 
     /* identification de l'appel entrant */
-    if (ip == 4) {
-        if (getnameinfo((struct sockaddr *)&sa, lensa, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
-            /* Resolution de nom impossible */
-        {
-            inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
-            printf("A connection from %s (%d) was received.\n", ipstr, ntohs(sa.sin_port));
-        } else
-            printf("A connection from %s (%d) was received.\n", hbuf, ntohs(sa.sin_port));
-    } else                      // IPV6
-    {
-        /* Resolution de nom impossible */
-        if (getnameinfo((struct sockaddr *)&sa6, lensa, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
-            if (inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr) == NULL) {
-                ERREUR("inet_ntop");
-                return (-1);
-            } else
-                printf("A connection from %s (%d) was received.\n", ipstr, ntohs(sa6.sin6_port));
-        } else
-            printf("A connection from %s (%d) was received.\n", hbuf, ntohs(sa6.sin6_port));
+    if (getnameinfo(sa, lensa, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf), NI_NUMERICSERV) != 0) {
+        ERREUR("Cannot get remote IP address of incoming connection");
+    } else {
+        printf("A connection from %s (%s) was received.\n", hbuf, pbuf);
     }
 
     printf("Connection is established, with socket ID %d.\n", newso);
@@ -726,20 +713,20 @@ char *argv[];
     int nb;
     char *msg;
     int lus;
-    struct sockaddr_in sa;
+    struct sockaddr_in sa4;
     struct sockaddr_in6 sa6;
+    struct sockaddr *sa;
 
-    socklen_t lensa = sizeof(struct sockaddr_in);
+    socklen_t lensa;
     static int oob;
     static int peek;
     static t_flg flgs[] = { {"oob", &oob},
     {"peek", &peek}
     };
     int so;
-    socklen_t len = 0;          /* input */
     char hbuf[NI_MAXHOST];
+    char pbuf[NI_MAXSERV];
     int ip;
-    char ipstr[INET6_ADDRSTRLEN];
 
     /* flags sur la ligne de commande */
     oob = peek = 0;
@@ -767,13 +754,14 @@ char *argv[];
 
     /* AF_INET; */
     if (ip == 4) {
-        lensa = sizeof(struct sockaddr_in);
-        /* lecture */
-        lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek, (struct sockaddr *)&sa, &lensa);
+        sa = (struct sockaddr *)&sa4;
+	lensa = sizeof(struct sockaddr_in);
     } else {
-        lensa = sizeof(struct sockaddr_in6);
-        lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek, (struct sockaddr *)&sa6, &lensa);
+        sa = (struct sockaddr *)&sa6;
+	lensa = sizeof(struct sockaddr_in6);
     }
+    /* lecture */
+    lus = recvfrom(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek, sa, &lensa);
 
     if (lus < 0) {
         ERREUR("recvfrom()");
@@ -781,21 +769,10 @@ char *argv[];
     }
 
     /* identification de l'origine des donnees */
-    if (ip == 4) {
-        /* Resolution de nom impossible */
-        if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
-            inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
-            printf("A message of length %d bytes was received from %s (%d).\n", lus, ipstr, ntohs(sa.sin_port));
-        } else
-            printf("A message of length %d bytes was received from %s (%d).\n", lus, hbuf, ntohs(sa.sin_port));
+    if (getnameinfo(sa, lensa, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf), NI_NUMERICSERV) != 0) {
+        ERREUR("Cannot get remote IP address of incoming connection");
     } else {
-        // IPV6
-        /* Resolution de nom impossible */
-        if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
-            inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
-            printf("A message of length %d bytes was received from %s (%d).\n", lus, ipstr, ntohs(sa6.sin6_port));
-        } else
-            printf("A message of length %d bytes was received from %s (%d).\n", lus, hbuf, ntohs(sa6.sin6_port));
+        printf("A message of length %d bytes was received from %s (%s).\n", lus, hbuf, pbuf);
     }
     msg[lus] = (char)0;
     printf("Message=<%s>\n", msg);
