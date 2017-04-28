@@ -8,8 +8,7 @@
 
 #include "socklab.h"
 
-char *versionTcp =
-    "tcp.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
+char *versionTcp = "tcp.c : $Revision: 386 $ du $Date: 2011-04-21 09:31:07 +0200 (Thu, 21 Apr 2011) $ par $Author: rousseau $";
 
 /* Creation d'une socket passive en ipv4
  *=======================================================================
@@ -20,30 +19,30 @@ int TCP_passive(argc, argv)
 int argc;
 char *argv[];
 {
-	static char *socket_argv[] = { "socket", "tcp", 0 };
-	static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
-	static char *listen_argv[] = { "listen", ".", "5", 0 };
-	static char *close_argv[] = { "close", ".", 0 };
-	int so;
-	int port;
+    static char *socket_argv[] = { "socket", "tcp", 0 };
+    static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
+    static char *listen_argv[] = { "listen", ".", "5", 0 };
+    static char *close_argv[] = { "close", ".", 0 };
+    int so;
+    int port;
 
-	so = socket_call(2, socket_argv);
-	if (so == -1)
-		return (-1);
+    so = socket_call(2, socket_argv);
+    if (so == -1)
+        return (-1);
 
-	port = bind_call(4, bind_argv);
-	if (port == -1) {
-		close_call(2, close_argv);
-		return (-1);
-	}
+    port = bind_call(4, bind_argv);
+    if (port == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
 
-	if (listen_call(3, listen_argv) == -1) {
-		close_call(2, close_argv);
-		return (-1);
-	}
+    if (listen_call(3, listen_argv) == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
 
-	printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
-	return (0);
+    printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
+    return (0);
 }
 
 /* Creation d'une socket passive en ipv6
@@ -61,22 +60,22 @@ char *argv[];
     static char *close_argv[] = { "close", ".", 0 };
     int so;
     int port;
-    
+
     so = socket6_call(2, socket_argv);
     if (so == -1)
         return (-1);
-    
+
     port = bind_call(4, bind_argv);
     if (port == -1) {
         close_call(2, close_argv);
         return (-1);
     }
-    
+
     if (listen_call(3, listen_argv) == -1) {
         close_call(2, close_argv);
         return (-1);
     }
-    
+
     printf("Socket (IPV6) TCP creee: id=%d, port=%d\n", sock[so], port);
     return (0);
 }
@@ -90,58 +89,57 @@ int TCP_connect(argc, argv)
 int argc;
 char *argv[];
 {
-	static char *socket_argv[] = { "socket", "tcp", 0 };
-	static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
-	static char *close_argv[] = { "close", ".", 0 };
-	static char c_host[20];
-	static char c_port[20];
-	static char *connect_argv[] = { "connnect", ".", c_host, c_port, 0 };
-	int so;
-	int port;
-	struct sockaddr_in addr;
-   
+    static char *socket_argv[] = { "socket", "tcp", 0 };
+    static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
+    static char *close_argv[] = { "close", ".", 0 };
+    static char c_host[20];
+    static char c_port[20];
+    static char *connect_argv[] = { "connnect", ".", c_host, c_port, 0 };
+    int so;
+    int port;
+    struct sockaddr_in addr;
 
-	if (nbsock == MAXSOCK) {
-		printf("La table interne des sockets est pleine.\n");
-		return (-1);
-	}
-/* host ? */
-	if (argc > 1)
-		get_host(argv[1], (struct sockaddr *)&addr, 4);
-	else
-		get_host("", (struct sockaddr *)&addr, 4);
+    if (nbsock == MAXSOCK) {
+        printf("La table interne des sockets est pleine.\n");
+        return (-1);
+    }
+    /* host ? */
+    if (argc > 1)
+        get_host(argv[1], (struct sockaddr *)&addr, 4);
+    else
+        get_host("", (struct sockaddr *)&addr, 4);
 
-        inet_ntop(addr.sin_family, &(addr.sin_addr), c_host, sizeof(c_host));
+    inet_ntop(addr.sin_family, &(addr.sin_addr), c_host, sizeof(c_host));
 
-/* port ? */
-	if (argc > 2)
-		get_port(argv[2], &port);
-	else
-		get_port("", &port);
+    /* port ? */
+    if (argc > 2)
+        get_port(argv[2], &port);
+    else
+        get_port("", &port);
 
-	sprintf(c_port, "%d", port);
+    sprintf(c_port, "%d", port);
 
-/* creation de la socket */
-	so = socket_call(2, socket_argv);
-	if (so == -1)
-		return (-1);
+    /* creation de la socket */
+    so = socket_call(2, socket_argv);
+    if (so == -1)
+        return (-1);
 
-/* affectation d'une adresse */
-	port = bind_call(4, bind_argv);
-	if (port == -1) {
-		close_call(2, close_argv);
-		return (-1);
-	}
+    /* affectation d'une adresse */
+    port = bind_call(4, bind_argv);
+    if (port == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
 
-	printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
+    printf("Socket TCP creee: id=%d, port=%d\n", sock[so], port);
 
-/* connexion */
-	if (connect_call(4, connect_argv) == -1) {
-		close_call(2, close_argv);
-		return (-1);
-	}
+    /* connexion */
+    if (connect_call(4, connect_argv) == -1) {
+        close_call(2, close_argv);
+        return (-1);
+    }
 
-	return (0);
+    return (0);
 }
 
 /* Creation d'une socket ipv6 active + connexion
@@ -162,8 +160,7 @@ char *argv[];
     int so;
     int port;
     struct sockaddr_in6 addr;
-    
-    
+
     if (nbsock == MAXSOCK) {
         printf("La table interne des sockets est pleine.\n");
         return (-1);
@@ -172,22 +169,22 @@ char *argv[];
     if (argc > 1)
         get_host(argv[1], (struct sockaddr *)&addr, 6);
     else
-      get_host("", (struct sockaddr *)&addr, 6);
+        get_host("", (struct sockaddr *)&addr, 6);
 
     inet_ntop(addr.sin6_family, &(addr.sin6_addr), c_host, sizeof(c_host));
 
     /* port ? */
     if (argc > 2)
-      get_port(argv[2], &port);
+        get_port(argv[2], &port);
     else
-      get_port("", &port);
+        get_port("", &port);
 
     sprintf(c_port, "%d", port);
 
     /* creation de la socket */
     so = socket6_call(2, socket_argv);
     if (so == -1)
-      return (-1);
+        return (-1);
 
     /* affectation d'une adresse */
     port = bind_call(4, bind_argv);
@@ -195,17 +192,18 @@ char *argv[];
         close_call(2, close_argv);
         return (-1);
     }
-    
+
     printf("Socket(IPv6) TCP creee: id=%d, port=%d\n", sock[so], port);
-    
+
     /* connexion */
     if (connect_call(4, connect_argv) == -1) {
         close_call(2, close_argv);
         return (-1);
     }
-    
+
     return (0);
 }
+
 /* Envoi de donnees urgentes
  *=========================================================================
  *
@@ -215,16 +213,16 @@ int TCP_usend(argc, argv)
 int argc;
 char *argv[];
 {
-	static char *send_argv[] = { "send", 0, 0, 0 };
+    static char *send_argv[] = { "send", 0, 0, 0 };
 
-	argc = remove_flags(argc, argv);
-	send_argv[1] = "-oob";
-	if (argc > 1)
-		send_argv[2] = argv[1];
-	if (argc > 2)
-		send_argv[3] = argv[2];
-	// et on utilise la fonction send_call (prim.c)...
-	return (send_call(argc + 1, send_argv));
+    argc = remove_flags(argc, argv);
+    send_argv[1] = "-oob";
+    if (argc > 1)
+        send_argv[2] = argv[1];
+    if (argc > 2)
+        send_argv[3] = argv[2];
+    // et on utilise la fonction send_call (prim.c)...
+    return (send_call(argc + 1, send_argv));
 }
 
 /* Reception de donnees urgentes
@@ -236,14 +234,14 @@ int TCP_urecv(argc, argv)
 int argc;
 char *argv[];
 {
-	static char *recv_argv[] = { "recv", 0, 0, 0 };
+    static char *recv_argv[] = { "recv", 0, 0, 0 };
 
-	argc = remove_flags(argc, argv);
-	recv_argv[1] = "-oob";
-	if (argc > 1)
-		recv_argv[2] = argv[1];
-	if (argc > 2)
-		recv_argv[3] = argv[2];
+    argc = remove_flags(argc, argv);
+    recv_argv[1] = "-oob";
+    if (argc > 1)
+        recv_argv[2] = argv[1];
+    if (argc > 2)
+        recv_argv[3] = argv[2];
 
-	return (recv_call(argc + 1, recv_argv));
+    return (recv_call(argc + 1, recv_argv));
 }

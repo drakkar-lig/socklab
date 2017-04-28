@@ -25,4 +25,4 @@ void display_inet_addr();
 void ERREUR();
 int domainesock();
 
-#endif				/* _TOOLS_H_ */
+#endif                          /* _TOOLS_H_ */

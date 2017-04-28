@@ -36,4 +36,4 @@ int mleave_call();
 int mbind_call();
 void rtioctl();
 
-#endif				/* _PRIM_H_ */
+#endif                          /* _PRIM_H_ */

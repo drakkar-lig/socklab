@@ -16,4 +16,4 @@ int set_async_opt();
 int set_nodelay_opt();
 int set_socket_opt();
 
-#endif				/* _OPTIONS_H_ */
+#endif                          /* _OPTIONS_H_ */
