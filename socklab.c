@@ -846,6 +846,8 @@ char *argv[];
     sigaction(SIGIO, &sa, NULL);
     sa.sa_handler = SIGPIPE_handler;
     sigaction(SIGPIPE, &sa, NULL);
+    sa.sa_handler = SIGURG_handler;
+    sigaction(SIGURG, &sa, NULL);
 
     printf("socklab - laboratoire d'etude des sockets INTERNET\n");
     printf("-------------------------------------------------------------------------------\n");
