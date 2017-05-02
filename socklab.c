@@ -107,7 +107,6 @@ t_cmd cmds_TCP[] = {
 void SIGIO_handler(sig)
 int sig;
 {
-    signal(SIGIO, SIGIO_handler);
     printf("\n\7*** a socket just received data or a new connection attempt\n");
 }
 
@@ -121,7 +120,6 @@ int sig;
 void SIGPIPE_handler(sig)
 int sig;
 {
-    signal(SIGPIPE, SIGPIPE_handler);
     printf("\n\7*** the SIGPIPE signal has just been caught\n");
 }
 
@@ -134,14 +132,12 @@ int sig;
 void SIGINT_handler(sig)
 int sig;
 {
-    signal(SIGINT, SIGINT_handler);
     siglongjmp(ihm_env, 1);
 }
 
 void SIGURG_handler(sig)
 int sig;
 {
-    signal(SIGURG, SIGURG_handler);
     printf("SIGURG signal received\n");
 }
 
@@ -693,7 +689,6 @@ void ihm()
         ERREUR("sigsetjmp()");
         break;
     case 0:
-        signal(SIGINT, SIGINT_handler);
         break;
     case 1:
         printf("\n\n");
@@ -804,6 +799,8 @@ int main(argc, argv)
 int argc;
 char *argv[];
 {
+    struct sigaction sa;
+
     if (argc > 2)
         usage();
 
@@ -839,8 +836,16 @@ char *argv[];
 
     nbsock = 0;
     dft_sock = -1;
-    signal(SIGIO, SIGIO_handler);
-    signal(SIGPIPE, SIGPIPE_handler);
+
+    /* Setup signal handlers */
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sa.sa_handler = SIGINT_handler;
+    sigaction(SIGINT, &sa, NULL);
+    sa.sa_handler = SIGIO_handler;
+    sigaction(SIGIO, &sa, NULL);
+    sa.sa_handler = SIGPIPE_handler;
+    sigaction(SIGPIPE, &sa, NULL);
 
     printf("socklab - laboratoire d'etude des sockets INTERNET\n");
     printf("-------------------------------------------------------------------------------\n");
