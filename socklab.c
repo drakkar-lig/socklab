@@ -20,7 +20,7 @@ int dft_sock;                   /* socket par defaut */
 char *cmd_prompt;               /* prompt de l'interpreteur de commandes */
 int exec_mode;                  /* mode d'exploitation */
 t_cmd *cmds;                    /* Commandes disponibles */
-jmp_buf ihm_env;                /* pour retourner a l'ihm apres un ctrl-C */
+sigjmp_buf ihm_env;             /* pour retourner a l'ihm apres un ctrl-C */
 
 int help_cmd();
 int sock_status();
@@ -135,7 +135,7 @@ void SIGINT_handler(sig)
 int sig;
 {
     signal(SIGINT, SIGINT_handler);
-    longjmp(ihm_env, 1);
+    siglongjmp(ihm_env, 1);
 }
 
 void SIGURG_handler(sig)
@@ -688,9 +688,9 @@ void ihm()
     int cmd_argc;
     char *cmd_argv[MAX_CMD_ARGC];
 
-    switch (setjmp(ihm_env)) {
+    switch (sigsetjmp(ihm_env, 1)) {
     case -1:
-        ERREUR("setjmp()");
+        ERREUR("sigsetjmp()");
         break;
     case 0:
         signal(SIGINT, SIGINT_handler);
