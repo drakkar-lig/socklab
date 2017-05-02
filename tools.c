@@ -93,11 +93,17 @@ int *port;
 {
     struct addrinfo hints, *ai;
     int error;
+    int tmp_port;
 
     //struct servent *sp;
 
-    if (sscanf(name, "%d", port) == 1) {
-        return (0);
+    if (sscanf(name, "%d", &tmp_port) == 1) {
+        if (tmp_port >= 0 && tmp_port <= 65535) {
+            *port = tmp_port;
+	    return (0);
+	} else {
+	    return (-1);
+	}
     } else {
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;    // fonctionne pour IPV4 et IPV6
