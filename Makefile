@@ -7,7 +7,14 @@
 #
 CC	?= gcc
 
-GITVERSION := $(shell git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" | cut -c 2-)
+# This is only used when building from tarballs (update this when adding a new tag!)
+VERSION := 0.9
+# When building from the git repository, this is used instead
+GITVERSION := $(shell git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
+
+ifneq ($(GITVERSION),)
+	VERSION := $(GITVERSION)
+endif
 
 SOURCES = \
 socklab.c \
@@ -68,7 +75,7 @@ all: $(TARGETS)
 socklab: $(OBJS)
 
 version.c: force
-	echo 'const char* socklab_version = "$(GITVERSION)";' > $@
+	echo 'const char* socklab_version = "$(VERSION)";' > $@
 
 #
 # Nettoyage
