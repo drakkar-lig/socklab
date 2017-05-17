@@ -16,6 +16,12 @@ ifneq ($(GITVERSION),)
 	VERSION := $(GITVERSION)
 endif
 
+prefix = /usr/local
+exec_prefix = ${prefix}
+datarootdir = ${prefix}/share
+mandir = ${datarootdir}/man
+bindir = ${exec_prefix}/bin
+
 SOURCES = \
 socklab.c \
 prim.c \
@@ -77,10 +83,14 @@ socklab: $(OBJS)
 version.c: force
 	echo 'const char* socklab_version = "$(VERSION)";' > $@
 
+install: socklab man1/socklab.1
+	install -Dm755 socklab $(DESTDIR)$(bindir)/socklab
+	install -Dm644 man1/socklab.1 $(DESTDIR)$(mandir)/man1/socklab.1
+
 #
 # Nettoyage
 #
-.PHONY: clean force
+.PHONY: clean install force
 clean :
 	rm -f $(OBJS) *~ socklab
 
