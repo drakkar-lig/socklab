@@ -1,3 +1,4 @@
 *~
 *.o
 socklab
+version.c

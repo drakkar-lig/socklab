@@ -8,11 +8,10 @@
  */
 
 #include "socklab.h"
+#include "version.h"
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-
-char socklab_version[] = "0.9";
 
 int sock[MAXSOCK];              /* table des sockets gerees */
 int nbsock;                     /* nb de sockets gerees */

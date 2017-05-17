@@ -7,13 +7,16 @@
 #
 CC	?= gcc
 
+GITVERSION := $(shell git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" | cut -c 2-)
+
 SOURCES = \
 socklab.c \
 prim.c \
 options.c \
 tools.c \
 tcp.c \
-udp.c
+udp.c \
+version.c
 
 TARGETS=socklab
 OBJS	= $(SOURCES:.c=.o)
@@ -64,10 +67,13 @@ all: $(TARGETS)
 
 socklab: $(OBJS)
 
+version.c: force
+	echo 'const char* socklab_version = "$(GITVERSION)";' > $@
+
 #
 # Nettoyage
 #
-.PHONY: clean
+.PHONY: clean force
 clean :
 	rm -f $(OBJS) *~ socklab
 
