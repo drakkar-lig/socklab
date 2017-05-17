@@ -849,6 +849,7 @@ char *argv[];
     sigaction(SIGURG, &sa, NULL);
 
     printf("socklab - laboratoire d'etude des sockets INTERNET\n");
+    printf("version %s\n", socklab_version);
     printf("-------------------------------------------------------------------------------\n");
     ihm();
 
