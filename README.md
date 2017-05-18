@@ -1,15 +1,71 @@
 Socklab
-Laboratoire d'étude des sockets Internet
+=======
 
-Sous Licence CeCILL V2, voir le fichier Licence_CeCILL_V2-fr.txt
+Socklab is an interactive tool to learn about the socket API for UDP and TCP,
+without having to actually write C code.  The original description in French
+was "laboratoire d'étude des sockets Internet".
 
-Initialement développé par L. Croq, L. Sali, P. Sicard
-Contributions successives L. Bellissard, M. Heusse, F. Rousseau, entre autres
+It allows to create UDP and TCP sockets, `bind()` and `connect()` them, `read()`,
+`write()` to them, etc.  All this is provided by a shell-like interface with
+auto-completion.
 
-Aucun système de compilation sophistiqué n'est utilisé, il faut parfois aller
-modifier certains fichiers en fonction de la plateforme.
+Socklab is known to work fine on Linux and FreeBSD, and has been used extensively
+to teach networking courses over the last 30 years (in Grenoble and possibly elsewhere).
 
-Le code a été formaté avec GNU indent proche du style Linux, avec les options :
--nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 
--cli0 -d0 -di1 -nfc1 -i4 -ip0 -l150 -lp -npcs -nprs -npsl -sai
--saf -saw -ncs -nsc -sob -nfca -cp33 -ss -nut -il1
+Using `socklab`
+---------------
+
+You can run socklab in either UDP mode, TCP mode, or an advanced "standard" mode
+that allows to use both UDP and TCP:
+
+```
+$ socklab udp
+$ socklab tcp
+$ socklab
+```
+
+Once socklab is started (whatever the mode), run `help` to get a list of available commands.
+
+Documentation
+-------------
+
+There are several sources of documentation:
+
+- basic help: available within socklab itself by running `help`
+- description of commands: man page `socklab(1)`
+- most complete documentation: the LaTeX documentation in `doc/` (in French)
+
+Building
+--------
+
+Socklab uses a simple Makefile, so it should be enough to do:
+
+    $ make
+
+On BSD, make sure to use `gmake`:
+
+    $ gmake
+
+For packagers, the `install` target of the Makefile supports the standard GNU
+variables (`prefix`, `DESTDIR`, etc).
+
+The code is formatted with GNU indent, using a style similar to the Linux kernel.
+The following GNU indent options are used:
+
+    -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 
+    -cli0 -d0 -di1 -nfc1 -i4 -ip0 -l150 -lp -npcs -nprs -npsl -sai
+    -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -nut -il1
+
+License
+-------
+
+Socklab uses the CeCILL V2 license, see `Licence_CeCILL_V2-en.txt`.
+
+Sous Licence CeCILL V2, voir le fichier `Licence_CeCILL_V2-fr.txt`.
+
+Contributors
+------------
+
+Developped initially by L. Croq, L. Sali, P. Sicard.
+
+Successive contributions L. Bellissard, M. Heusse, F. Rousseau, B. Jonglez, and others.
