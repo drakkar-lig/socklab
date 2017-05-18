@@ -34,8 +34,9 @@ version.c
 TARGETS=socklab
 OBJS	= $(SOURCES:.c=.o)
 
-LDFLAGS	= -lreadline -lhistory
-CFLAGS	= -Wall
+# Let packagers define LDFLAGS and CFLAGS if they want to, but add our own flags
+LDFLAGS := -lreadline -lhistory $(LDFLAGS)
+CFLAGS  := -Wall $(CFLAGS)
 
 # Adaptation a Darwin / MacOS X
 ifeq ($(shell uname), Darwin)
