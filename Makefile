@@ -8,7 +8,7 @@
 CC	?= gcc
 
 # This is only used when building from tarballs (update this when adding a new tag!)
-VERSION := 0.9
+VERSION := 1.0.0
 # When building from the git repository, this is used instead
 GITVERSION := $(shell git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
 
