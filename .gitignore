@@ -2,3 +2,9 @@
 *.o
 socklab
 version.c
+*.swp
+*.aux
+*.idx
+*.log
+*.toc
+*.pdf
