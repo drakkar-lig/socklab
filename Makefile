@@ -52,11 +52,6 @@ LDFLAGS	= -lreadline
 endif
 endif
 
-# Adaptation a Linux
-ifeq ($(shell uname), Linux)
-LDFLAGS	+= -ltermcap
-endif
-
 # Adaptation a FreeBSD
 # Attention : il faut utiliser gmake...
 ifeq ($(shell uname),FreeBSD)
