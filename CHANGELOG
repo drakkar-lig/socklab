@@ -1,0 +1,17 @@
+18 May 2017: socklab-1.0.0
+
+  * First public release on github.
+  * Add IPv6 support.
+  * Add auto-completion for command names.
+  * Translate user interface from French to English.
+  * Version number is now automatically extracted from git.
+  * Fix build- and run-time support for Linux.
+  * Modernize build system: use standard variable names, use implicit
+    make rules, add install target.
+  * General modernisation improvements: ditch obsolete IPv6 constants,
+    use getnameinfo() and getaddrinfo().
+  * Several bug fixes.
+
+21 April 2011: socklab-0.9
+
+  * Import from svn repository (r386)
