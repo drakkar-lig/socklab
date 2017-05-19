@@ -38,6 +38,9 @@ There are several sources of documentation:
 Building
 --------
 
+The only dependency necessary to build socklab is `readline`.  You should install
+the `libreadline-dev` package on Debian-based systems.
+
 Socklab uses a simple Makefile, so it should be enough to do:
 
     $ make
