@@ -1,3 +1,12 @@
+19 May 2017: socklab-1.0.1
+
+  * Fix git version extraction in corner cases.
+  * Drop dependency on termcap, which is obsolete and does not seem to
+    actually be used by socklab.  This fixes build on Arch Linux.
+  * Allow to set build flags from env variables (useful for packagers).
+  * Expand README and translate to English.
+  * Add a changelog.
+
 18 May 2017: socklab-1.0.0
 
   * First public release on github.
