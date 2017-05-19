@@ -9,8 +9,11 @@ CC	?= gcc
 
 # This is only used when building from tarballs (update this when adding a new tag!)
 VERSION := 1.0.0
-# When building from the git repository, this is used instead
-GITVERSION := $(shell git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
+# When building from the git repository, this is used instead.
+# The rev-parse hack is here to detect whether we are at the root of the git
+# repository.  If that is not the case, it means that the socklab sources are
+# embedded in an unrelated git repository, so don't use a git tag.
+GITVERSION := $(shell [ -n "$(git rev-parse --show-cdup)" ] && git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
 
 ifneq ($(GITVERSION),)
 	VERSION := $(GITVERSION)
