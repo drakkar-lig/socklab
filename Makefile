@@ -13,7 +13,7 @@ VERSION := 1.0.0
 # The rev-parse hack is here to detect whether we are at the root of the git
 # repository.  If that is not the case, it means that the socklab sources are
 # embedded in an unrelated git repository, so don't use a git tag.
-GITVERSION := $(shell [ -n "$(git rev-parse --show-cdup)" ] && git describe --tags --always --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
+GITVERSION := $(shell [ -n "$(git rev-parse --show-cdup)" ] && git describe --tags --abbrev=7 --dirty --match "v[0-9]*" 2> /dev/null | cut -c 2-)
 
 ifneq ($(GITVERSION),)
 	VERSION := $(GITVERSION)
