@@ -886,9 +886,9 @@ char *argv[];
 
     /* Sur quelle interface ? */
     if (argc > 3)
-        get_itf(argv[3], &addr);
+        get_itf(argv[3], &addr,4);  /* possible seulement en ipv4 */
     else
-        get_itf("", &addr);
+        get_itf("", &addr,4);/*possible seulement en ipv4*/
     imr.imr_interface.s_addr = addr;
 
     /* Realisation du "setsockopt" */
@@ -932,9 +932,9 @@ char *argv[];
 
     /* Sur quelle interface ? */
     if (argc > 3)
-        get_itf(argv[3], &addr);
+        get_itf(argv[3], &addr,4);/*possible seulement en ipv4*/
     else
-        get_itf("", &addr);
+        get_itf("", &addr,4);/*possible seulement en ipv4*/
     imr.imr_interface.s_addr = addr;
 
     /* Realisation du "setsockopt" */
@@ -987,9 +987,9 @@ char *argv[];
 
     /* Sur quelle interface ? */
     if (argc > 3)
-        get_itf(argv[3], &i_addr);
+        get_itf(argv[3], &i_addr,4);/*possible seulement en ipv4*/
     else
-        get_itf("", &i_addr);
+        get_itf("", &i_addr,4);/*possible seulement en ipv4*/
 
     /* Socket source deja bindee */
     /* modification des options de la socket source */
