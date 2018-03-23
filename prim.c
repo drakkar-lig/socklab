@@ -787,7 +787,7 @@ char *argv[];
 /* Primitive msocket()
  *=======================================================================
  * permet de creer une socket UDP SANS L'ATTACHER A UN PORT
- *
+ * TTL particulier a 16 (constante predfini TTL_MCAST) sinon par defaut TTL à 1 vers socket multicast
  */
 
 int msocket_call(argc, argv)
@@ -824,7 +824,7 @@ char *argv[];
 {
     int so;
     int port;
-    struct sockaddr_in sin;
+    struct sockaddr addr;
 
     /* "Bind" de la nouvelle socket sur un port */
 
@@ -833,22 +833,23 @@ char *argv[];
         get_id_sock(argv[1], &so);
     else
         get_id_sock("", &so);
-
+    
+        
     /* port ? */
-    if (argc > 3)
+    if (argc > 2)
         get_port(argv[3], &port);
     else
         get_port("", &port);
-
-    /* Initialisation de la structure necessaire au "bind" */
-
-    memset((char *)&sin, 0, sizeof(sin));
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(port);
+        
+    /* host sur toutes les interfaces */
+         host_addr("*", &addr, 4); /* pour l'instant ipv4 */
+    ((struct sockaddr_in *)&addr)->sin_port = htons((u_short) port);
+    ((struct sockaddr_in *)&addr)->sin_family = AF_INET;
+        
 
     /* Realisation du "bind" */
 
-    if (bind(sock[so], (struct sockaddr *)&sin, sizeof(sin)) == -1) {
+    if (bind(sock[so], (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         perror("bind");
         return (-1);
     }
@@ -869,8 +870,10 @@ char *argv[];
 {
     int so;
     struct ip_mreq imr;
-    u_long addr = INADDR_NONE;
+    u_long gr = INADDR_NONE;
 
+    struct sockaddr addr;
+    
     /* id socket ? */
     if (argc > 1)
         get_id_sock(argv[1], &so);
@@ -879,18 +882,20 @@ char *argv[];
 
     /* Quel groupe joindre ? */
     if (argc > 2)
-        get_group(argv[2], &addr);
+        get_group(argv[2], &gr);
     else
-        get_group("", &addr);
-    imr.imr_multiaddr.s_addr = addr;
+        get_group("", &gr);
+    imr.imr_multiaddr.s_addr = gr;
 
-    /* Sur quelle interface ? */
-    if (argc > 3)
-        get_itf(argv[3], &addr,4);  /* possible seulement en ipv4 */
-    else
-        get_itf("", &addr,4);/*possible seulement en ipv4*/
-    imr.imr_interface.s_addr = addr;
-
+    /* toutes interfaces */
+        host_addr("*", &addr,4);  /* possible pour l'instant seulement en ipv4 */
+        imr.imr_interface.s_addr = ((struct sockaddr_in *)&addr)->sin_addr.s_addr;
+        
+    /*test*/
+    // char str[INET_ADDRSTRLEN];
+   //  inet_ntop(AF_INET, &(((struct sockaddr_in *)&addr)->sin_addr),str,INET_ADDRSTRLEN);
+   // printf("adresse IP : %s \n",str);
+    
     /* Realisation du "setsockopt" */
     if (setsockopt(sock[so], IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&imr, sizeof(struct ip_mreq)) == -1)
         ERREUR("Unable to join group");
@@ -915,7 +920,10 @@ char *argv[];
 {
     int so;
     struct ip_mreq imr;
-    u_long addr = INADDR_NONE;
+    u_long gr = INADDR_NONE;
+
+    struct sockaddr addr;
+
 
     /* id socket ? */
     if (argc > 1)
@@ -925,17 +933,15 @@ char *argv[];
 
     /* Quel groupe quitter ? */
     if (argc > 2)
-        get_group(argv[2], &addr);
+        get_group(argv[2], &gr);
     else
-        get_group("", &addr);
-    imr.imr_multiaddr.s_addr = addr;
+        get_group("", &gr);
+    imr.imr_multiaddr.s_addr = gr;
 
-    /* Sur quelle interface ? */
-    if (argc > 3)
-        get_itf(argv[3], &addr,4);/*possible seulement en ipv4*/
-    else
-        get_itf("", &addr,4);/*possible seulement en ipv4*/
-    imr.imr_interface.s_addr = addr;
+    /* toutes interfaces */
+    host_addr("*", &addr,4);/*possible seulement en ipv4*/
+    imr.imr_interface.s_addr = ((struct sockaddr_in *)&addr)->sin_addr.s_addr;
+
 
     /* Realisation du "setsockopt" */
     if (setsockopt(sock[so], IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&imr, sizeof(struct ip_mreq)) == -1)
@@ -965,9 +971,11 @@ char *argv[];
     char *msg;
     int total = 0;
     static int loop;
-    struct in_addr ifaddr;
+//    struct in_addr ifaddr;
     u_long d_addr = INADDR_NONE;
-    u_long i_addr = INADDR_NONE;
+//    u_long i_addr = INADDR_NONE;
+//    struct sockaddr addr;
+
 
     msg = (char *)malloc(MAX_BUFFER * sizeof(char));
 
@@ -985,25 +993,24 @@ char *argv[];
     else
         get_group("", &d_addr);
 
-    /* Sur quelle interface ? */
-    if (argc > 3)
-        get_itf(argv[3], &i_addr,4);/*possible seulement en ipv4*/
-    else
-        get_itf("", &i_addr,4);/*possible seulement en ipv4*/
-
-    /* Socket source deja bindee */
-    /* modification des options de la socket source */
-    ifaddr.s_addr = i_addr;
-
-    if (setsockopt(sock[so], IPPROTO_IP, IP_MULTICAST_IF, (char *)&ifaddr.s_addr, sizeof(ifaddr.s_addr)) == -1) {
-        perror("can't set multicast source interface");
-        return (-1);
-    }
+    /* Sur quelle interface ? inutile */
+//  if (argc > 3)
+//       get_itf(argv[3], &addr,4);/*possible seulement en ipv4*/
+//   else
+//      get_itf("", &addr,4);/*possible seulement en ipv4*/
+/* Socket source deja bindee */
+/* on ne reprecise pas l'interface de sortie */
+/* modification des options de la socket source */
+//  ifaddr.s_addr = ((struct sockaddr_in *)&addr)->sin_addr.s_addr;
+// if (setsockopt(sock[so], IPPROTO_IP, IP_MULTICAST_IF, (char *)&ifaddr.s_addr, sizeof(ifaddr.s_addr)) == -1) {
+//      perror("can't set multicast source interface");
+//      return (-1);
+//  }
 
     /* Numero de port destination ? */
     /* modif P. Sicard Port source et port destination pas forcement les memes */
-    if (argc > 4)
-        get_port(argv[4], &port);
+    if (argc > 3)
+        get_port(argv[3], &port);
     else
         get_port("", &port);
 
