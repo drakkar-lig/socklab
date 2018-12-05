@@ -98,7 +98,7 @@ char *argv[];
     struct sockaddr_in addr;
 
     if (nbsock == MAXSOCK) {
-        printf("Too much sockets already in use.\n");
+        printf("Too many sockets already in use.\n");
         return (-1);
     }
     /* host ? */
@@ -160,7 +160,7 @@ char *argv[];
     struct sockaddr_in6 addr;
 
     if (nbsock == MAXSOCK) {
-        printf("Too much sockets already in use.\n");
+        printf("Too many sockets already in use.\n");
         return (-1);
     }
     /* host ? */

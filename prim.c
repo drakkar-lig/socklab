@@ -27,7 +27,7 @@ char *argv[];
     int proto;
     static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
     if (nbsock == MAXSOCK) {
-        printf("Too much sockets already in use.\n");
+        printf("Too many sockets already in use.\n");
         return (-1);
     }
 
@@ -73,7 +73,7 @@ char *argv[];
     int proto;
     static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
     if (nbsock == MAXSOCK) {
-        printf("Too much sockets already in use.\n");
+        printf("Too many sockets already in use.\n");
         return (-1);
     }
 
@@ -253,7 +253,7 @@ char *argv[];
     char pbuf[NI_MAXSERV];
 
     if (nbsock == MAXSOCK) {
-        printf("Too much sockets already in use.\n");
+        printf("Too many sockets already in use.\n");
         return (-1);
     }
 
