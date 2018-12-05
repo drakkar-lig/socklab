@@ -260,6 +260,14 @@ int *size;
                 }
             } else {
                 *size = strlen(*msg);
+                // replace trailing space with \n
+                if ((*size >= 1) && ((*msg)[*size - 1] == ' ')) {
+                    (*msg)[*size - 1] = '\n';
+                }
+                // and double trailing spaces with \r\n to easily send HTTP requests
+                if ((*size >= 2) && ((*msg)[*size - 2] == ' ')) {
+                    (*msg)[*size - 2] = '\r';
+                }
                 return;
             }
         }
