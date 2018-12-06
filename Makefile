@@ -58,7 +58,8 @@ endif
 # Adaptation a FreeBSD
 # Attention : il faut utiliser gmake...
 ifeq ($(shell uname),FreeBSD)
-LDFLAGS	+= -ltermcap
+CPPFLAGS+=-I/usr/local/include
+LDFLAGS +=-L/usr/local/lib
 endif
 
 # Adaptation a Solaris
