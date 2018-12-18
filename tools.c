@@ -259,14 +259,24 @@ int *size;
                     return;
                 }
             } else {
-                *size = strlen(*msg);
+                int len = strlen(*msg);
+                *size = len;
                 // replace trailing space with \n
-                if ((*size >= 1) && ((*msg)[*size - 1] == ' ')) {
-                    (*msg)[*size - 1] = '\n';
+                len--;
+                if ((len >= 0) && ((*msg)[len] == ' ')) {
+                    (*msg)[len] = '\n';
                 }
                 // and double trailing spaces with \r\n to easily send HTTP requests
-                if ((*size >= 2) && ((*msg)[*size - 2] == ' ')) {
-                    (*msg)[*size - 2] = '\r';
+                len--;
+                if ((len >= 0) && ((*msg)[len] == ' ')) {
+                    (*msg)[len] = '\r';
+                    // plus all double spaces in the string with \r\n
+                    for (; len >= 1; len--) {
+                        if (((*msg)[len] == ' ') && ((*msg)[len - 1] == ' ')) {
+                            (*msg)[len--] = '\n';
+                            (*msg)[len]   = '\r';
+                        }
+                    }
                 }
                 return;
             }
