@@ -66,6 +66,17 @@ Socklab uses the CeCILL V2 license, see `Licence_CeCILL_V2-en.txt`.
 
 Sous Licence CeCILL V2, voir le fichier `Licence_CeCILL_V2-fr.txt`.
 
+How to make a new release
+-------------------------
+
+- determine the new version number using [semantic versioning](https://semver.org/)
+- update `VERSION` in the Makefile
+- create a new entry in the `CHANGELOG` file
+- commit in git
+- create tag: `git tag v1.x.y`
+- push using `--tags`
+- create a release on [github](https://github.com/drakkar-lig/socklab/releases) and copy-paste the changelog entry
+
 Contributors
 ------------
 
