@@ -35,9 +35,10 @@ use only SOCK_DGRAM sockets
 .It Ic Q | Ic X | Ic quit | Ic exit
 Exit
 .Nm
-.It Ic \&? | Ic help Ar cmd
+.It Ic \&? | Ic help Op Ar cmd
 Get help for
 .Ar cmd
+or list available commands.
 .It Ic \&= | Ic status
 Show status for all active sockets.
 The currently selected socket is identified with
@@ -66,11 +67,13 @@ is specified using \&*
 .Ss UDP mode commands 
 .Bl -tag -indent
 .It Ic s | Ic socket
-create a new socket
+Create a new socket
+.It Ic n | Ic socket6
+Create a new IPv6 socket
 .It Ic c | Ic msocket
-create a new multicast socket
+Create a new multicast socket
 .It Ic k | Ic close Op Ar id
-.It Ic o | Ic options Op Ar id Op Ar nom
+.It Ic o | Ic options Op Ar id Op Ar name
 .It Ic j | Ic mjoin
 .It Ic l | Ic mleave
 .It Ic b | Ic mbind
@@ -81,6 +84,26 @@ create a new multicast socket
 .It Ic a | Ic bsend
 .El
 .Ss TCP mode commands
+.Bl -tag -indent
+.It Ic p | Ic passive
+Create a new passive socket
+.It Ic n | Ic passive6
+Create a new passive IPv6 socket
+.It Ic a | Ic accept Op Ar id
+Accept a new connection on a passive socket
+.It Ic c | Ic connect Op Ar host Op Ar port
+Connect to a given host and port
+.It Ic e | Ic connect6 Op Ar host Op Ar port
+Connect using IPv6 to a given host and port
+.It Ic k | Ic close Op Ar id
+.It Ic h | Ic shutdown Op Ar id Op Ar in | out | both
+.It Ic o | Ic options Op Ar id Op Ar name
+.It Ic r | Ic read
+.It Ic w | Ic write
+.It Ic v | Ic urecv
+Receive an urgent message (OOB)
+.It Ic d | Ic usend
+Send an urgent message (OOB)
 .\" .Sh ENVIRONMENT      \" May not be needed
 .\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
 .\" .It Ev ENV_VAR_1
@@ -98,6 +121,7 @@ create a new multicast socket
 .\" .El
 .\" .Sh SEE ALSO 
 .\" .Sh BUGS              \" Document known, unremedied bugs 
+.El
 .Sh HISTORY           \" Document history if command behaves in a unique manner
 This is an educational tool, coded for teaching computer networks at IMAG, Grenoble, France.
 .Sh AUTHORS
