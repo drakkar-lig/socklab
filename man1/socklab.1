@@ -104,6 +104,26 @@ Connect using IPv6 to a given host and port
 Receive an urgent message (OOB)
 .It Ic d | Ic usend
 Send an urgent message (OOB)
+.Sh WRITING MESSAGES
+When writing messages (with any of
+.Ic write
+|
+.Ic sendto
+|
+.Ic msendto
+|
+.Ic bsend
+|
+.Ic usend
+), two syntaxes can be used:
+.Bl -tag -indent
+.It Ar literal message
+Send the given message.  Double spaces are replaced with "\\r\\n", and a trailing space is replaced with "\\n".
+This allows to easily send HTTP requests, for instance: "
+.Ar "GET / HTTP/1.1  Host: localhost   "
+".
+.It Ic # Ar nb_bytes
+Send a message with the given number of bytes.
 .\" .Sh ENVIRONMENT      \" May not be needed
 .\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
 .\" .It Ev ENV_VAR_1
