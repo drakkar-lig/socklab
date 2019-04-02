@@ -261,22 +261,18 @@ int *size;
             } else {
                 int len = strlen(*msg);
                 *size = len;
-                // replace trailing space with \n
-                len--;
+		len--;
+		// Replace all double spaces with \r\n to easily send HTTP requests
+		for (; len >= 1; len--) {
+		    if (((*msg)[len] == ' ') && ((*msg)[len - 1] == ' ')) {
+		        (*msg)[len--] = '\n';
+			(*msg)[len]   = '\r';
+		    }
+		}
+                // Replace single trailing space with \n
+                len = *size - 1;
                 if ((len >= 0) && ((*msg)[len] == ' ')) {
                     (*msg)[len] = '\n';
-                }
-                // and double trailing spaces with \r\n to easily send HTTP requests
-                len--;
-                if ((len >= 0) && ((*msg)[len] == ' ')) {
-                    (*msg)[len] = '\r';
-                    // plus all double spaces in the string with \r\n
-                    for (; len >= 1; len--) {
-                        if (((*msg)[len] == ' ') && ((*msg)[len - 1] == ' ')) {
-                            (*msg)[len--] = '\n';
-                            (*msg)[len]   = '\r';
-                        }
-                    }
                 }
                 return;
             }
