@@ -74,7 +74,7 @@ How to make a new release
 - create a new entry in the `CHANGELOG` file
 - commit in git
 - create tag: `git tag v1.x.y`
-- push with `git push --follow-tags` (or make sure you push the new tag using another method)
+- push everything with `git push && git push --tags`
 - create a release on [github](https://github.com/drakkar-lig/socklab/releases) and copy-paste the changelog entry
 
 Contributors
