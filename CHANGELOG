@@ -1,3 +1,8 @@
+15 December 2020: socklab-1.1.1
+
+  * Fix build on ubuntu 16.04
+  * Fix a possible buffer overflow via long DNS name
+
 2 April 2019: socklab-1.1.0
 
   * Convert double spaces to \r\n in messages to ease communication with HTTP servers.
