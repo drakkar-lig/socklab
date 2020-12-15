@@ -166,7 +166,7 @@ int sock_status()
     struct sockaddr_in6 sa6;
 
     socklen_t lensa;
-    char str[100];
+    char str[100];  /* Needs to be larger than hbuf + some space */
     int i;
     int c;
     fd_set readfds;
@@ -176,7 +176,7 @@ int sock_status()
     int the_ttl;
     struct timeval timeout;
     socklen_t len = 0;          /* input */
-    char hbuf[NI_MAXHOST];
+    char hbuf[64];
     char ipstr[INET6_ADDRSTRLEN];
     int ip, lgstradr = 0, lgstradr2 = 0;
 
@@ -263,7 +263,7 @@ int sock_status()
                    sprintf(str, "*(%d)", ntohs(sa6.sin6_port));
                    else { */
                 if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
-                    /* Resolution de nom impossible */
+                    /* Resolution de nom impossible ou nom trop long */
                 {
                     inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
                     sprintf(str, "%s(%d)", ipstr, ntohs(sa6.sin6_port));
@@ -279,7 +279,7 @@ int sock_status()
             c = getpeername(sock[i], (struct sockaddr *)&sa6, &lensa);
             if (c == 0) {
                 if (getnameinfo((struct sockaddr *)&sa6, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
-                    /* Resolution de nom impossible */
+                    /* Resolution de nom impossible ou nom trop long */
                 {
                     inet_ntop(sa6.sin6_family, &(sa6.sin6_addr), ipstr, sizeof ipstr);
                     sprintf(str, "%s(%d)", ipstr, ntohs(sa6.sin6_port));
@@ -329,7 +329,7 @@ int sock_status()
                     sprintf(str, "*(%d)", ntohs(sa.sin_port));
                 else {
                     if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
-                        /* Resolution de nom impossible */
+                        /* Resolution de nom impossible ou nom trop long */
                     {
                         inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
                         sprintf(str, "%s(%d)", ipstr, ntohs(sa.sin_port));
@@ -348,7 +348,7 @@ int sock_status()
             c = getpeername(sock[i], (struct sockaddr *)&sa, &lensa);
             if (c == 0) {
                 if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
-                    /* Resolution de nom impossible */
+                    /* Resolution de nom impossible ou nom trop long */
                 {
                     inet_ntop(sa.sin_family, &(sa.sin_addr), ipstr, sizeof ipstr);
                     sprintf(str, "%s(%d)", ipstr, ntohs(sa.sin_port));
