@@ -38,7 +38,8 @@ TARGETS=socklab
 OBJS	= $(SOURCES:.c=.o)
 
 # Let packagers define LDFLAGS and CFLAGS if they want to, but add our own flags
-LDFLAGS := -lreadline -lhistory $(LDFLAGS)
+LDFLAGS := $(LDFLAGS)
+LDLIBS  := -lreadline -lhistory 
 CFLAGS  := -Wall $(CFLAGS)
 
 # Adaptation a Darwin / MacOS X
