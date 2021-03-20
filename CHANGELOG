@@ -1,3 +1,7 @@
+20 March 2021: socklab-1.1.2
+
+  * Fix build on OS X
+
 15 December 2020: socklab-1.1.1
 
   * Fix build on ubuntu 16.04
