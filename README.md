@@ -9,8 +9,15 @@ It allows to create UDP and TCP sockets, `bind()` and `connect()` them, `read()`
 `write()` to them, etc.  All this is provided by a shell-like interface with
 auto-completion.
 
-Socklab is known to work fine on Linux and FreeBSD, and has been used extensively
-to teach networking courses over the last 30 years (in Grenoble and possibly elsewhere).
+Socklab is known to work fine on Linux, FreeBSD and OS X.  It has been used extensively
+to teach networking courses over the last 30 years:
+
+- Université Grenoble Alpes / Grenoble INP / Polytech Grenoble
+- Université Savoie Mont Blanc / IUT Annecy
+- Université de La Rochelle
+- [Université Lille 1 / Faculté des Sciences et Technologies / MIAGE](https://www.fil.univ-lille1.fr/~noe/rsx1_portail/files/TP1.pdf)
+- [Université de Caen Normandie / IUT Caen](https://loudni.users.greyc.fr/Enseignement/Cours/TR2/)
+- [Université de la Réunion](http://lim.univ-reunion.fr/staff/panelli/4_teaching/4_TP-RX/index.html)
 
 Using `socklab`
 ---------------
