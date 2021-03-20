@@ -39,7 +39,7 @@ OBJS	= $(SOURCES:.c=.o)
 
 # Let packagers define LDFLAGS and CFLAGS if they want to, but add our own flags
 LDFLAGS := $(LDFLAGS)
-LDLIBS  := -lreadline -lhistory 
+LDLIBS  := -lreadline -lhistory
 CFLAGS  := -Wall $(CFLAGS)
 
 # Adaptation a Darwin / MacOS X
@@ -52,7 +52,7 @@ else
 # OSX readline does not support invisible characters in prompt
 # http://stackoverflow.com/questions/31329952
 CPPFLAGS+=-DOSX_READLINE
-LDFLAGS	= -lreadline
+LDLIBS	= -lreadline
 endif
 endif
 
