@@ -34,5 +34,7 @@ int mjoin_call();
 int mleave_call();
 int mbind_call();
 void rtioctl();
+int sendmsg_call();
+int recvmsg_call();
 
 #endif                          /* _PRIM_H_ */

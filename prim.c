@@ -1155,3 +1155,122 @@ char *argv[];
     sprintf(sockfd, "%d", sock[so]);
     return sendto_call(2, sockarg);
 }
+
+/*------------------------------------------------------------------------*/
+
+/* Primitive sendmsg()
+ *=======================================================================
+ *
+ */
+
+int sendmsg_call(argc, argv)
+int argc;
+char *argv[];
+{
+    int nb, ip, rv = 0;
+    struct msghdr msg;
+    struct iovec iov;
+    int port = -1;
+    struct sockaddr_in6 addr;
+    int so;
+
+    memset(&msg, 0, sizeof(msg));
+    iov.iov_base = malloc(MAX_BUFFER);
+    iov.iov_len = MAX_BUFFER;
+
+    /* id socket ? */
+    get_id_sock(argc > 1 ? argv[1] : "", &so);
+
+    ip = domainesock(sock[so]); /* domaine de la socket 4 ou 6 */
+
+    /* host ? */
+    get_host(argc > 2 ? argv[2] : "", &addr, ip);
+
+    /* port ? */
+    get_port(argc > 3 ? argv[3] : "", &port);
+
+    /* message ? */
+    strlcpy(((char*)iov.iov_base), argc > 4 ? argv[4] : "", MAX_BUFFER);
+    get_msg(&iov.iov_base, &iov.iov_len);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    /* AF_INET; */
+    if (ip == 4) {
+        ((struct sockaddr_in *)&addr)->sin_port = htons((u_short) port);
+        msg.msg_namelen = sizeof(struct sockaddr_in);
+    } else {
+        ((struct sockaddr_in6 *)&addr)->sin6_port = htons((u_short) port);
+        msg.msg_namelen = sizeof(struct sockaddr_in6);
+    }
+    msg.msg_name = &addr;
+
+    /* Envoi du message */
+    nb = sendmsg(sock[so], &msg, 0);
+    if (nb >= 0) {
+        printf("Sent %d bytes\n", nb);
+    } else {
+        ERREUR("sendmsg()");
+        rv = -1;
+    }
+
+    free(iov.iov_base);
+    return rv;
+}
+
+/*------------------------------------------------------------------------*/
+
+/* Primitive recvmsg()
+ *=======================================================================
+ *
+ */
+
+int recvmsg_call(argc, argv)
+int argc;
+char *argv[];
+{
+    int nb, rv = 0;
+    struct msghdr msg;
+    struct iovec iov;
+    struct sockaddr_in6 addr;
+    char host[NI_MAXHOST];
+    char serv[NI_MAXSERV];
+    int so;
+
+    memset(&msg, 0, sizeof(msg));
+    iov.iov_base = malloc(MAX_BUFFER);
+    iov.iov_len = MAX_BUFFER;
+
+    /* id socket ? */
+    get_id_sock(argc > 1 ? argv[1] : "", &so);
+
+    /* combien ? */
+    iov.iov_len = 100;
+    get_nb("Nb of bytes to read", argc > 2 ? argv[2] : "", &iov.iov_len);
+    /* One more is for us: for a '\0' to be able to print the message. */
+    iov.iov_base = malloc((iov.iov_len + 1) * sizeof(char));
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    msg.msg_namelen = sizeof(struct sockaddr_in6);
+    msg.msg_name = &addr;
+
+    /* Envoi du message */
+    nb = recvmsg(sock[so], &msg, 0);
+    if (nb < 0) {
+        ERREUR("recvmsg()");
+        rv = -1;
+    } else {
+        /* identification de l'origine des donnees */
+        if (getnameinfo(msg.msg_name, msg.msg_namelen, host, sizeof(host), serv, sizeof(serv), NI_NUMERICSERV) != 0) {
+            ERREUR("Cannot get remote IP address of incoming connection");
+        } else {
+            printf("A message of length %d bytes was received from %s (%s).\n", nb, host, serv);
+        }
+        ((char*)msg.msg_iov[0].iov_base)[nb] = '\0';
+        printf("Message=<%s>\n", (char*)msg.msg_iov[0].iov_base);
+    }
+
+    free(iov.iov_base);
+    return rv;
+}
