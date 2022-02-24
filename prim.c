@@ -24,20 +24,29 @@ int argc;
 char *argv[];
 {
     int s;
-    int proto;
-    static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
+    int type, proto;
+    static t_item list[] = { {"tcp", IPPROTO_TCP}, {"udp", IPPROTO_UDP}, {"sctp", IPPROTO_SCTP } };
+    int n = sizeof(list) / sizeof(t_item);
     if (nbsock == MAXSOCK) {
         printf("Too many sockets already in use.\n");
         return (-1);
     }
 
     if (argc > 1)
-        get_choice("Protocol?", list, 2, argv[1], &proto);
+        get_choice("Protocol?", list, n, argv[1], &proto);
     else
-        get_choice("Protocol?", list, 2, "", &proto);
+        get_choice("Protocol?", list, n, "", &proto);
+
+    /* calcul du type de socket */
+    switch (proto) {
+        case IPPROTO_TCP: type = SOCK_STREAM; break;
+        case IPPROTO_UDP: type = SOCK_DGRAM; break;
+        case IPPROTO_SCTP: type = SOCK_SEQPACKET; break;
+        default: fprintf(stderr, "Unknown protocol %d\n", proto); return -1;
+    }
 
     /* creation de la socket */
-    s = socket(AF_INET, proto, 0);
+    s = socket(AF_INET, type, proto);
     if (s < 0) {
         ERREUR("socket()");
         return (-1);
@@ -70,20 +79,29 @@ int argc;
 char *argv[];
 {
     int s;
-    int proto;
-    static t_item list[] = { {"tcp", SOCK_STREAM}, {"udp", SOCK_DGRAM} };
+    int type, proto;
+    static t_item list[] = { {"tcp", IPPROTO_TCP}, {"udp", IPPROTO_UDP}, {"sctp", IPPROTO_SCTP } };
+    int n = sizeof(list) / sizeof(t_item);
     if (nbsock == MAXSOCK) {
         printf("Too many sockets already in use.\n");
         return (-1);
     }
 
     if (argc > 1)
-        get_choice("Protocol?", list, 2, argv[1], &proto);
+        get_choice("Protocol?", list, n, argv[1], &proto);
     else
-        get_choice("Protocol?", list, 2, "", &proto);
+        get_choice("Protocol?", list, n, "", &proto);
+
+    /* calcul du type de socket */
+    switch (proto) {
+        case IPPROTO_TCP: type = SOCK_STREAM; break;
+        case IPPROTO_UDP: type = SOCK_DGRAM; break;
+        case IPPROTO_SCTP: type = SOCK_SEQPACKET; break;
+        default: fprintf(stderr, "Unknown protocol %d\n", proto); return -1;
+    }
 
     /* creation de la socket */
-    s = socket(AF_INET6, proto, 0);
+    s = socket(AF_INET6, type, proto);
     if (s < 0) {
         ERREUR("socket()");
         return (-1);

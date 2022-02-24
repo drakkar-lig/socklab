@@ -28,8 +28,8 @@ int terminaison();
 /* Commandes par defaut */
 
 t_cmd cmds_STD[] = {
-    {"socket",     0, 's', socket_call,    "[tcp|udp]"},
-    {"socket6",    0, 'n', socket6_call,   "[tcp|udp]"},
+    {"socket",     0, 's', socket_call,    "[tcp|udp|sctp]"},
+    {"socket6",    0, 'n', socket6_call,   "[tcp|udp|sctp]"},
     {"bind",       0, 'b', bind_call,      "[id] [host] [port]"},
     {"listen",     0, 'l', listen_call,    "[id] [nb]"},
     {"accept",     0, 'a', accept_call,    "[id] "},
@@ -160,7 +160,7 @@ int terminaison()
 
 int sock_status()
 {
-    int type;
+    int proto;
     socklen_t lentype;
     struct sockaddr_in sa;
     struct sockaddr_in6 sa6;
@@ -209,20 +209,19 @@ int sock_status()
         printf("%c%-4d", (i == dft_sock ? '>' : ' '), sock[i]);
 
         lentype = sizeof(int);
-        if (getsockopt(sock[i], SOL_SOCKET, SO_TYPE, (char *)&type, &lentype)
+        if (getsockopt(sock[i], SOL_SOCKET, SO_PROTOCOL, (char *)&proto, &lentype)
             < 0) {
 /*BUG get sockopt PS 2000 apparu avec nouvelle version de solaris */
             /*      ERREUR ("getsockopt()"); 
                return (-1); */
         }
-        switch (type) {
-        case SOCK_STREAM:
+        switch (proto) {
+        case IPPROTO_TCP:
             printf("TCP     ");
             break;
-        case SOCK_DGRAM:
+        case IPPROTO_UDP:
             printf("UDP ");
-            //modif martin est-ce une sock multicast ?
-
+            // multicast ?
             ip = domainesock(sock[i]);
             if (ip == 4) {      /* AF_INET; */
                 if (getsockopt(sock[i], IPPROTO_IP, IP_MULTICAST_TTL, (char *)&the_ttl, &lentype) < 0)
@@ -242,7 +241,10 @@ int sock_status()
             else if (the_ttl == 1)
                 printf("U   ");
             else
-                printf("%d  \n", type);
+                printf("?   ");
+            break;
+        case IPPROTO_SCTP:
+            printf("SCTP    ");
             break;
         default:
             printf("?       ");
