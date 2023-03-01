@@ -1,0 +1,13 @@
+stages:
+  - build
+
+default:
+  image: gcc:latest
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+        - socklab
