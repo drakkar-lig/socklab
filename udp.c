@@ -13,9 +13,7 @@
  *
  */
 
-int UDP_socket(argc, argv)
-int argc;
-char *argv[];
+int UDP_socket(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket", "udp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -42,9 +40,7 @@ char *argv[];
  *
  */
 
-int UDP_socket6(argc, argv)
-int argc;
-char *argv[];
+int UDP_socket6(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket6", "udp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -71,9 +67,7 @@ char *argv[];
  *
  */
 
-int UDP_recvfrom(argc, argv)
-int argc;
-char *argv[];
+int UDP_recvfrom(int argc, char *argv[])
 {
     argc = remove_flags(argc, argv);
 
@@ -85,9 +79,7 @@ char *argv[];
  *
  */
 
-int UDP_sendto(argc, argv)
-int argc;
-char *argv[];
+int UDP_sendto(int argc, char *argv[])
 {
     argc = remove_flags(argc, argv);
 

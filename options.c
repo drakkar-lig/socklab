@@ -45,9 +45,7 @@ t_sockopt sockopt[] = {
  *
  */
 
-int socket_options(argc, argv)
-int argc;
-char *argv[];
+int socket_options(int argc, char *argv[])
 {
     int so;
     int opt;
@@ -88,9 +86,7 @@ char *argv[];
  *==========================================================================
  */
 
-int set_bool_opt(so, opt)
-int so;
-int opt;
+int set_bool_opt(int so, int opt)
 {
     socklen_t optlen;
     int optval;
@@ -119,9 +115,7 @@ int opt;
  *==========================================================================
  */
 
-int set_int_opt(so, opt)
-int so;
-int opt;
+int set_int_opt(int so, int opt)
 {
     socklen_t optlen;
     int optval;
@@ -150,9 +144,7 @@ int opt;
  *==========================================================================
  */
 
-int set_async_opt(so, opt)
-int so;
-int opt;
+int set_async_opt(int so, int opt)
 {
     int flg;
     int optval;
@@ -179,9 +171,7 @@ int opt;
  *==========================================================================
  */
 
-int set_nodelay_opt(so, opt)
-int so;
-int opt;
+int set_nodelay_opt(int so, int opt)
 {
     int flg;
     int optval;
@@ -208,9 +198,7 @@ int opt;
  *==========================================================================
  */
 
-int set_time_opt(so, opt)
-int so;
-int opt;
+int set_time_opt(int so, int opt)
 {
     socklen_t optlen;
     struct timeval optval;
@@ -223,7 +211,9 @@ int opt;
         return (-1);
     }
 
-    get_nb(sockopt[opt].name, "", &(optval.tv_sec));
+    int tmp = (optval.tv_sec > INT_MAX) ? INT_MAX : (int)optval.tv_sec;
+    get_nb(sockopt[opt].name, "", &tmp);
+    optval.tv_sec = tmp;
     optval.tv_usec = 0;
 
     optlen = sizeof(optval);
@@ -240,9 +230,7 @@ int opt;
  *==========================================================================
  */
 
-int set_socket_opt(so, opt)
-int so;
-int opt;
+int set_socket_opt(int so, int opt)
 {
     switch (sockopt[opt].type) {
     case BOOL_OPT:

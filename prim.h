@@ -9,30 +9,26 @@
 #ifndef	_PRIM_H_
 #define	_PRIM_H_
 
-int socket_call();
-int socket6_call();
-
-int msocket_call();
-int msetmulticast();
-int bind_call();
-
-int listen_call();
-int accept_call();
-int connect_call();
-int close_call();
-int shutdown_call();
-int write_call();
-int send_call();
-int sendto_call();
-int read_call();
-int recv_call();
-int recvfrom_call();
-int msendto_call();
-int bsend_call();
-int mrecvfrom_call();
-int mjoin_call();
-int mleave_call();
-int mbind_call();
-void rtioctl();
+int socket_call(int argc, char *argv[]);
+int socket6_call(int argc, char *argv[]);
+int bind_call(int argc, char *argv[]);
+int listen_call(int argc, char *argv[]);
+int accept_call(int argc, char *argv[]);
+int connect_call(int argc, char *argv[]);
+int close_call(int argc, char *argv[]);
+int shutdown_call(int argc, char *argv[]);
+int write_call(int argc, char *argv[]);
+int send_call(int argc, char *argv[]);
+int sendto_call(int argc, char *argv[]);
+int read_call(int argc, char *argv[]);
+int recv_call(int argc, char *argv[]);
+int recvfrom_call(int argc, char *argv[]);
+int msocket_call(int argc, char *argv[]);
+int mbind_call(int argc, char *argv[]);
+int mjoin_call(int argc, char *argv[]);
+int mleave_call(int argc, char *argv[]);
+int msendto_call(int argc, char *argv[]);
+int mrecvfrom_call(int argc, char *argv[]);
+int bsend_call(int argc, char *argv[]);
 
 #endif                          /* _PRIM_H_ */

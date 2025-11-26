@@ -13,9 +13,7 @@
  *
  */
 
-int TCP_passive(argc, argv)
-int argc;
-char *argv[];
+int TCP_passive(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket", "tcp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -48,9 +46,7 @@ char *argv[];
  *
  */
 
-int TCP_passive6(argc, argv)
-int argc;
-char *argv[];
+int TCP_passive6(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket6", "tcp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -83,9 +79,7 @@ char *argv[];
  *
  */
 
-int TCP_connect(argc, argv)
-int argc;
-char *argv[];
+int TCP_connect(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket", "tcp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -145,9 +139,7 @@ char *argv[];
  *
  */
 
-int TCP_connect6(argc, argv)
-int argc;
-char *argv[];
+int TCP_connect6(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket6", "tcp", 0 };
     static char *bind_argv[] = { "bind", ".", "*", "0", 0 };
@@ -207,9 +199,7 @@ char *argv[];
  *
  */
 
-int TCP_usend(argc, argv)
-int argc;
-char *argv[];
+int TCP_usend(int argc, char *argv[])
 {
     static char *send_argv[] = { "send", 0, 0, 0 };
 
@@ -228,9 +218,7 @@ char *argv[];
  *
  */
 
-int TCP_urecv(argc, argv)
-int argc;
-char *argv[];
+int TCP_urecv(int argc, char *argv[])
 {
     static char *recv_argv[] = { "recv", 0, 0, 0 };
 

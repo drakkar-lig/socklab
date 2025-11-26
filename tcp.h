@@ -8,11 +8,12 @@
 
 #ifndef	_TCP_H_
 #define	_TCP_H_
-int TCP_passive();
-int TCP_connect();
-int TCP_passive6();
-int TCP_connect6();
-int TCP_usend();
-int TCP_urecv();
+
+int TCP_passive(int argc, char *argv[]);
+int TCP_passive6(int argc, char *argv[]);
+int TCP_connect(int argc, char *argv[]);
+int TCP_connect6(int argc, char *argv[]);
+int TCP_usend(int argc, char *argv[]);
+int TCP_urecv(int argc, char *argv[]);
 
 #endif

@@ -11,9 +11,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-void rl_gets(str, len)
-char *str;
-int len;
+void rl_gets(char *str, int len)
 {
     char *line_read;
 
@@ -33,11 +31,7 @@ int len;
  *
  */
 
-int host_addr(host, addr, version)
-char host[];
-struct sockaddr *addr;
-int version;
-
+int host_addr(char host[], struct sockaddr *addr, int version)
 {
     struct addrinfo hints, *ai;
     int error;
@@ -87,9 +81,7 @@ int version;
 
  */
 
-int port_number(name, port)
-char name[];
-int *port;
+int port_number(char name[], int *port)
 {
     struct addrinfo hints, *ai;
     int error;
@@ -140,32 +132,19 @@ int *port;
  * parametre. Les adresses sont retournees en network byte order
  * (pas de hton_ necessaire par la suite !)
  */
-void get_itf_host();
+void get_itf_host(char name[], struct sockaddr *addr, int version, char prompt[]);
 
-void get_host(name, addr, version)
-char name[];
-struct sockaddr *addr;
-int version;
-
+void get_host(char name[], struct sockaddr *addr, int version)
 {
     get_itf_host(name, addr, version, "Host?");
 }
 
-void get_itf(name, addr, version)
-char name[];
-struct sockaddr *addr;
-int version;
-
+void get_itf(char name[], struct sockaddr *addr, int version)
 {
     get_itf_host(name, addr, version, "Interface address?");
 }
 
-void get_itf_host(name, addr, version, prompt)
-char name[];
-struct sockaddr *addr;
-int version;
-
-char prompt[];
+void get_itf_host(char name[], struct sockaddr *addr, int version, char prompt[])
 {
     char str[MAX_HOSTNAME];
 
@@ -196,9 +175,7 @@ char prompt[];
  * L'adresse est retournee par parametre. 
  */
 
-void get_group(name, addr)
-char name[];
-u_long *addr;
+void get_group(char name[], u_long *addr)
 {
     char str[MAX_HOSTNAME];
 
@@ -217,9 +194,7 @@ u_long *addr;
  *=======================================================================
  */
 
-void get_port(name, port)
-char name[];
-int *port;
+void get_port(char name[], int *port)
 {
     char str[MAX_PORTNAME];
 
@@ -241,9 +216,7 @@ int *port;
  * res '*' est alors cree.
  */
 
-void get_msg(msg, size)
-char **msg;
-int *size;
+void get_msg(char **msg, int *size)
 {
     int nb;
 
@@ -288,10 +261,7 @@ int *size;
  *
  */
 
-void get_nb(prompt, init, nb)
-char prompt[];
-char init[];
-int *nb;
+void get_nb(char prompt[], char init[], int *nb)
 {
     int defval;
     char str[50];
@@ -320,12 +290,7 @@ int *nb;
  *
  */
 
-void get_choice(prompt, list, nb, init, choice)
-char prompt[];
-t_item list[];
-int nb;
-char init[];
-int *choice;
+void get_choice(char prompt[], t_item list[], int nb, char init[], int *choice)
 {
     char str[50];
     int i;
@@ -352,9 +317,7 @@ int *choice;
  *
  */
 
-void get_bool(prompt, var)
-char prompt[];
-int *var;
+void get_bool(char prompt[], int *var)
 {
     char str[50];
 
@@ -381,9 +344,7 @@ int *var;
  *
  */
 
-void get_id_sock(init, so)
-char init[];
-int *so;
+void get_id_sock(char init[], int *so)
 {
     char str[50];
     int id;
@@ -421,8 +382,7 @@ int *so;
  *
  */
 
-int ask(prompt)
-char prompt[];
+int ask(char prompt[])
 {
     int rep;
 
@@ -437,8 +397,7 @@ char prompt[];
  * Utilisee uniquement pour debugger
  */
 
-void display_inet_addr(addr)
-struct sockaddr *addr;
+void display_inet_addr(struct sockaddr *addr)
 {
     char ipstr[INET6_ADDRSTRLEN];
     char ipver;
@@ -475,8 +434,7 @@ struct sockaddr *addr;
  * Le message est affiche en video inversee
  */
 
-void ERREUR(msg)
-char msg[];
+void ERREUR(char msg[])
 {
     VIDEO_INV_ERR(perror(msg));
 }
@@ -487,8 +445,7 @@ char msg[];
 * retourne -1 en cas d'erreur 
  */
 
-int domainesock(socket)
-int socket;
+int domainesock(int socket)
 {
     int only = 0;
     socklen_t size;

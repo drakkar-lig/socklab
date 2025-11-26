@@ -19,9 +19,7 @@
  *
  */
 
-int socket_call(argc, argv)
-int argc;
-char *argv[];
+int socket_call(int argc, char *argv[])
 {
     int s;
     int proto;
@@ -65,9 +63,7 @@ char *argv[];
  *=======================================================================
  *
  */
-int socket6_call(argc, argv)
-int argc;
-char *argv[];
+int socket6_call(int argc, char *argv[])
 {
     int s;
     int proto;
@@ -119,9 +115,7 @@ char *argv[];
  *
  */
 
-int bind_call(argc, argv)
-int argc;
-char *argv[];
+int bind_call(int argc, char *argv[])
 {
     socklen_t lensa = sizeof(struct sockaddr_in);
     int port = -1;
@@ -139,9 +133,9 @@ char *argv[];
 
     /* host ? */
     if (argc > 2)
-        get_host(argv[2], &addr, ip);
+        get_host(argv[2], (struct sockaddr *)&addr, ip);
     else
-        get_host("", &addr, ip);
+        get_host("", (struct sockaddr *)&addr, ip);
 
     /* port ? */
     if (argc > 3)
@@ -203,9 +197,7 @@ char *argv[];
  *
  */
 
-int listen_call(argc, argv)
-int argc;
-char *argv[];
+int listen_call(int argc, char *argv[])
 {
     int nb = -1;
     int so;
@@ -237,9 +229,7 @@ char *argv[];
  *
  */
 
-int accept_call(argc, argv)
-int argc;
-char *argv[];
+int accept_call(int argc, char *argv[])
 {
     struct sockaddr_in sa4;
     struct sockaddr_in6 sa6;
@@ -297,9 +287,7 @@ char *argv[];
  *
  */
 
-int connect_call(argc, argv)
-int argc;
-char *argv[];
+int connect_call(int argc, char *argv[])
 {
     int port = -1;
     struct sockaddr_in6 addr;   /* peut servir en ipv4 ou ipv6 */
@@ -318,9 +306,9 @@ char *argv[];
 
     /* host ? */
     if (argc > 2)
-        get_host(argv[2], &addr, ip);
+        get_host(argv[2], (struct sockaddr *)&addr, ip);
     else
-        get_host("", &addr, ip);
+        get_host("", (struct sockaddr *)&addr, ip);
 
     /* port ? */
     if (argc > 3)
@@ -353,9 +341,7 @@ char *argv[];
  *
  */
 
-int close_call(argc, argv)
-int argc;
-char *argv[];
+int close_call(int argc, char *argv[])
 {
     int i;
     int so;
@@ -388,9 +374,7 @@ char *argv[];
  *
  */
 
-int shutdown_call(argc, argv)
-int argc;
-char *argv[];
+int shutdown_call(int argc, char *argv[])
 {
     int sens = -1;
     static t_item list[] = { {"in", 0}, {"out", 1}, {"both", 2} };
@@ -422,9 +406,7 @@ char *argv[];
  *
  */
 
-int write_call(argc, argv)
-int argc;
-char *argv[];
+int write_call(int argc, char *argv[])
 {
     int nb;
     char *msg;
@@ -465,9 +447,7 @@ char *argv[];
  *
  */
 
-int send_call(argc, argv)
-int argc;
-char *argv[];
+int send_call(int argc, char *argv[])
 {
     int nb;
     char *msg;
@@ -475,9 +455,10 @@ char *argv[];
     static int oob;
     static int dontroute;
     static int loop;
-    static t_flg flgs[] = { {"oob", &oob},
-    {"dontroute", &dontroute},
-    {"loop", &loop}
+    static t_flg flgs[] = {
+        {"oob", &oob},
+        {"dontroute", &dontroute},
+        {"loop", &loop}
     };
     int so;
 
@@ -527,9 +508,7 @@ char *argv[];
  * Meme chose que la fonction send_call ci-dessus mais en precisant l'hote...
  */
 
-int sendto_call(argc, argv)
-int argc;
-char *argv[];
+int sendto_call(int argc, char *argv[])
 {
     int nb, ip, size;
     char *msg;
@@ -539,11 +518,11 @@ char *argv[];
     static int oob;
     static int dontroute;
     static int loop;
-    static t_flg flgs[] = { {"oob", &oob},
-    {"dontroute", &dontroute},
-    {"loop", &loop}
+    static t_flg flgs[] = {
+        {"oob", &oob},
+        {"dontroute", &dontroute},
+        {"loop", &loop}
     };
-
     int so;
 
     msg = (char *)malloc(MAX_BUFFER * sizeof(char));
@@ -562,9 +541,9 @@ char *argv[];
 
     /* host ? */
     if (argc > 2)
-        get_host(argv[2], &addr, ip);
+        get_host(argv[2], (struct sockaddr *)&addr, ip);
     else
-        get_host("", &addr, ip);
+        get_host("", (struct sockaddr *)&addr, ip);
 
     /* port ? */
     if (argc > 3)
@@ -612,9 +591,7 @@ char *argv[];
  *
  */
 
-int read_call(argc, argv)
-int argc;
-char *argv[];
+int read_call(int argc, char *argv[])
 {
     int nb = -1;
     int lus;
@@ -654,17 +631,16 @@ char *argv[];
  *
  */
 
-int recv_call(argc, argv)
-int argc;
-char *argv[];
+int recv_call(int argc, char *argv[])
 {
     int nb = -1;
     int lus;
     char msg[MAX_BUFFER];
     static int oob;
     static int peek;
-    static t_flg flgs[] = { {"oob", &oob},
-    {"peek", &peek}
+    static t_flg flgs[] = {
+        {"oob", &oob},
+        {"peek", &peek}
     };
     int so;
 
@@ -706,9 +682,7 @@ char *argv[];
  *
  */
 
-int recvfrom_call(argc, argv)
-int argc;
-char *argv[];
+int recvfrom_call(int argc, char *argv[])
 {
     int nb;
     char *msg;
@@ -720,8 +694,9 @@ char *argv[];
     socklen_t lensa;
     static int oob;
     static int peek;
-    static t_flg flgs[] = { {"oob", &oob},
-    {"peek", &peek}
+    static t_flg flgs[] = {
+        {"oob", &oob},
+        {"peek", &peek}
     };
     int so;
     char hbuf[NI_MAXHOST];
@@ -790,9 +765,7 @@ char *argv[];
  * TTL particulier a 16 (constante predfini TTL_MCAST) sinon par defaut TTL à 1 vers socket multicast
  */
 
-int msocket_call(argc, argv)
-int argc;
-char *argv[];
+int msocket_call(int argc, char *argv[])
 {
     static char *socket_argv[] = { "socket", "udp", 0 };
     int so;
@@ -818,9 +791,7 @@ char *argv[];
  *
  */
 
-int mbind_call(argc, argv)
-int argc;
-char *argv[];
+int mbind_call(int argc, char *argv[])
 {
     int so;
     int port;
@@ -864,9 +835,7 @@ char *argv[];
  *
  */
 
-int mjoin_call(argc, argv)
-int argc;
-char *argv[];
+int mjoin_call(int argc, char *argv[])
 {
     int so;
     struct ip_mreq imr;
@@ -914,9 +883,7 @@ char *argv[];
  *
  */
 
-int mleave_call(argc, argv)
-int argc;
-char *argv[];
+int mleave_call(int argc, char *argv[])
 {
     int so;
     struct ip_mreq imr;
@@ -960,9 +927,7 @@ char *argv[];
  *
  */
 
-int msendto_call(argc, argv)
-int argc;
-char *argv[];
+int msendto_call(int argc, char *argv[])
 {
     int so;
     struct sockaddr_in sa;
@@ -1055,9 +1020,7 @@ char *argv[];
  *
  */
 
-int mrecvfrom_call(argc, argv)
-int argc;
-char *argv[];
+int mrecvfrom_call(int argc, char *argv[])
 {
     int count = 1;
     struct timeval start, stop;
@@ -1110,9 +1073,7 @@ char *argv[];
  *
  */
 
-int bsend_call(argc, argv)
-int argc;
-char *argv[];
+int bsend_call(int argc, char *argv[])
 {
     int so;
     int enable = 1;

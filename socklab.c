@@ -21,10 +21,6 @@ int exec_mode;                  /* mode d'exploitation */
 t_cmd *cmds;                    /* Commandes disponibles */
 sigjmp_buf ihm_env;             /* pour retourner a l'ihm apres un ctrl-C */
 
-int help_cmd();
-int sock_status();
-int terminaison();
-
 /* Commandes par defaut */
 
 t_cmd cmds_STD[] = {
@@ -103,8 +99,7 @@ t_cmd cmds_TCP[] = {
  * celle-ci marche en mode asynchrone.
  */
 
-void SIGIO_handler(sig)
-int sig;
+void SIGIO_handler(int sig)
 {
     printf("\n\7*** a socket just received data or a new connection attempt\n");
 }
@@ -116,8 +111,7 @@ int sig;
  *
  */
 
-void SIGPIPE_handler(sig)
-int sig;
+void SIGPIPE_handler(int sig)
 {
     printf("\n\7*** the SIGPIPE signal has just been caught\n");
 }
@@ -128,14 +122,12 @@ int sig;
  * Ici, on retourne a l'ihm
  */
 
-void SIGINT_handler(sig)
-int sig;
+void SIGINT_handler(int sig)
 {
     siglongjmp(ihm_env, 1);
 }
 
-void SIGURG_handler(sig)
-int sig;
+void SIGURG_handler(int sig)
 {
     printf("SIGURG signal received\n");
 }
@@ -144,7 +136,7 @@ int sig;
  *=======================================================================
  */
 
-int terminaison()
+int terminaison(int argc, char *argv[])
 {
     if (ask("Do you really want to exit socklab?") == 0)
         return (0);
@@ -158,7 +150,7 @@ int terminaison()
  *
  */
 
-int sock_status()
+int sock_status(int argc, char *argv[])
 {
     int type;
     socklen_t lentype;
@@ -398,9 +390,7 @@ int sock_status()
  *
  */
 
-int help_cmd(argc, argv)
-int argc;
-char *argv[];
+int help_cmd(int argc, char *argv[])
 {
     int ind[4];
     int nb, i;
@@ -477,11 +467,7 @@ char *argv[];
  *
  */
 
-int check_flags(argc, argv, flgs, nb_flgs)
-int argc;
-char *argv[];
-t_flg flgs[];
-int nb_flgs;
+int check_flags(int argc, char *argv[], t_flg flgs[], int nb_flgs)
 {
     char **new_argv;
     int new_argc;
@@ -520,9 +506,7 @@ int nb_flgs;
  *
  */
 
-int remove_flags(argc, argv)
-int argc;
-char *argv[];
+int remove_flags(int argc, char *argv[])
 {
     char **new_argv;
     int new_argc;
@@ -546,13 +530,12 @@ char *argv[];
  *=================================================================
  * La fonction retourne l'indice de la commande ou un code d'erreur.
  * Le tableau argv[] est rempli en sorti si une commande a ete trouvee.
- *
+ * cmd : Ligne de commande
+ * argc : Nb de mots dans la ligne
+ * argv : Commande + parametres
  */
 
-int check_cmd(cmd, argc, argv)
-char cmd[];                     /* Ligne de commande */
-int *argc;                      /* Nb de mots dans la ligne */
-char *argv[];                   /* Commande + parametres */
+int check_cmd(char cmd[], int *argc, char *argv[])
 {
     char *ptr;
     int i, nb, ind;
@@ -750,8 +733,7 @@ void print_version()
 /* Replace \[ and \] by readline ignore delimiters (bash-like)
  * Not robust to malformed prompt strings
  */
-char *make_prompt(str)
-char *str;
+char *make_prompt(char *str)
 {
     char *prompt = malloc(strlen(str));
     char *p = prompt;
@@ -794,9 +776,7 @@ char *str;
  *
  */
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
     struct sigaction sa;
 

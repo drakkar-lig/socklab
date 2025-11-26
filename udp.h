@@ -9,9 +9,9 @@
 #ifndef	_UDP_H_
 #define _UDP_H_
 
-int UDP_socket();
-int UDP_socket6();
-int UDP_recvfrom();
-int UDP_sendto();
+int UDP_socket(int argc, char *argv[]);
+int UDP_socket6(int argc, char *argv[]);
+int UDP_recvfrom(int argc, char *argv[]);
+int UDP_sendto(int argc, char *argv[]);
 
 #endif
