@@ -8,7 +8,7 @@
 CC	?= gcc
 
 # This is only used when building from tarballs (update this when adding a new tag!)
-VERSION := 1.1.2
+VERSION := 1.1.3
 # When building from the git repository, this is used instead.
 # The rev-parse hack is here to detect whether we are at the root of the git
 # repository.  If that is not the case, it means that the socklab sources are

@@ -635,7 +635,7 @@ int recv_call(int argc, char *argv[])
 {
     int nb = -1;
     int lus;
-    char msg[MAX_BUFFER];
+    char *msg;
     static int oob;
     static int peek;
     static t_flg flgs[] = {
@@ -664,6 +664,8 @@ int recv_call(int argc, char *argv[])
         else
             get_nb("Nb of bytes to read", "", &nb);
     }
+    msg = (char *)malloc((nb + 1) * sizeof(char));
+
     /* lecture des donnees */
     lus = recv(sock[so], msg, nb, MSG_OOB * oob | MSG_PEEK * peek);
     if (lus < 0) {
@@ -673,7 +675,7 @@ int recv_call(int argc, char *argv[])
 
     msg[lus] = (char)0;
     printf("Read %d bytes: message=<%s>\n", lus, msg);
-
+    free(msg);
     return (0);
 }
 
